@@ -18,14 +18,27 @@ public class Business {
     public String id;
     public String category;
 
-    public Business(String name, Location location, String addressLine, String suburb, String id, String category) {
+    public Business(String name, Location location, String addressLine, String suburb, String id, String category, String phoneNumber) {
         this.name = name;
         this.location = location;
         this.addressLine = addressLine;
         this.suburb = suburb;
         this.id = id;
-        this.phoneNumber = "";
+        this.phoneNumber = phoneNumber;
         this.category = category;
+    }
+
+    @Override
+    public String toString() {
+        return "Business{" +
+                "name='" + name + '\'' +
+                ", location=" + location +
+                ", addressLine='" + addressLine + '\'' +
+                ", suburb='" + suburb + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", id='" + id + '\'' +
+                ", category='" + category + '\'' +
+                '}';
     }
 
     public String getCategory() {

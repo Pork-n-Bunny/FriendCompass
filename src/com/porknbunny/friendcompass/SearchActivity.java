@@ -53,8 +53,8 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
                 boolean isEnter = (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER);
                 if (isEnter) {
-                    SAPIQuery task = new SAPIQuery();
-                    task.execute(new String[]{searchField.getText().toString()});
+                    new SAPIQuery().execute(new String[]{searchField.getText().toString()});
+                    searchField.clearFocus();
                 }
                 return isEnter;
             }
@@ -74,12 +74,18 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
         List<String> providers = locationManager.getAllProviders();
 
         double accuracy = -1;
+        if (providers.size() == 0) {
+            Log.w(TAG, "No providers available");
+        }
         for (String provider : providers) {
             Location tempLoc = locationManager.getLastKnownLocation(provider);
-            if (accuracy < 0 || tempLoc.getAccuracy() < accuracy) {
+            if (tempLoc != null && (accuracy < 0 || tempLoc.getAccuracy() < accuracy)) {
                 location = tempLoc;
             }
         }
+
+        //initial search
+        new SAPIQuery().execute(new String[]{""});
     }
 
     private String getMetaData(String key) {
@@ -162,18 +168,27 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            Log.v(TAG, "" + position + " " + results.size());
-
-
             if (convertView == null) {
                 convertView = inflateService.inflate(R.layout.search_item, parent, false);
-                convertView.setTag(R.id.only_field, convertView.findViewById(R.id.only_field));
+                int resourceList[] = {R.id.si_address,
+                        R.id.si_category,
+                        R.id.si_distance,
+                        R.id.si_name,
+                        R.id.si_phone,
+                        R.id.si_suburb};
+                for (int res : resourceList) {
+                    convertView.setTag(res, convertView.findViewById(res));
+                }
             }
 
-            String searchItem = results.get(position);
-            if (searchItem != null) {
-                TextView bodyTextView = (TextView) convertView.getTag(R.id.only_field);
-                bodyTextView.setText(searchItem);
+            Business business = results.get(position);
+            if (business != null) {
+                ((TextView) convertView.getTag(R.id.si_address)).setText(business.getAddressLine());
+                ((TextView) convertView.getTag(R.id.si_category)).setText(business.getCategory());
+                ((TextView) convertView.getTag(R.id.si_distance)).setText("" + business.getLocation().distanceTo(location));
+                ((TextView) convertView.getTag(R.id.si_name)).setText(business.getName());
+                ((TextView) convertView.getTag(R.id.si_phone)).setText(business.getPhoneNumber());
+                ((TextView) convertView.getTag(R.id.si_suburb)).setText(business.getSuburb());
             }
             return convertView;
         }
@@ -184,8 +199,10 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
     private class SAPIQuery extends AsyncTask<String, Void, String> {
         private String url;
         private final int BUFF_SIZE = 16384;
+        private final String sapi_key;
 
         private SAPIQuery() {
+            sapi_key = getMetaData("SAPI_KEY");
         }
 
         @Override
@@ -193,16 +210,14 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
             ArrayList<String> newList = new ArrayList<String>();
             for (String searchTerm : searchTerms) {
                 try {
+                    location.getLatitude();
                     url = "http://api.sensis.com.au/ob-20110511/test/search?key="
-                            + getMetaData("SAPI_KEY")
-
+                            + sapi_key
                             + "&query="
-
                             + URLEncoder.encode(searchTerm, "UTF-8")
-
                             + "&location="
-
-                            + URLEncoder.encode(location.getLatitude() + ", " + location.getLongitude(), "UTF-8");
+                            + URLEncoder.encode(location.getLatitude() + ", " + location.getLongitude(), "UTF-8")
+                            + "&sortBy=DISTANCE";
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 }
@@ -239,7 +254,7 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
         @Override
         protected void onPostExecute(String result) {
             if (result != null) {
-                results = new ArrayList<String>();
+                results = new ArrayList<Business>();
                 //time to parse some JSON!
                 try {
                     JSONObject jsonObject = new JSONObject(result);
@@ -260,14 +275,19 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
                             Location businessLocation = new Location("SAPI");
                             businessLocation.setLatitude(latitude);
                             businessLocation.setLongitude(longitude);
-
+                            String addressLine = address.getString("addressLine");
+                            String suburb = address.getString("suburb");
 
                             //category
                             String category = "";
-                            JSONArray categories = jsonBusiness.getJSONArray("categories");
-                            for (int j = 0; j < categories.length(); j++) {
-                                JSONObject cat = categories.getJSONObject(j);
-                                category = cat.getString(name);
+                            try {
+                                JSONArray categories = jsonBusiness.getJSONArray("categories");
+                                for (int j = 0; j < categories.length(); j++) {
+                                    JSONObject cat = categories.getJSONObject(j);
+                                    category = cat.getString(name);
+                                }
+                            } catch (Exception e) {
+
                             }
 
                             //phone
@@ -276,7 +296,7 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
                             try {
                                 for (int j = 0; j < contacts.length(); j++) {
                                     JSONObject contact = contacts.getJSONObject(j);
-                                    if (contact.getString("type").compareTo("Phone")) {
+                                    if (contact.getString("type").compareTo("Phone") == 0) {
                                         phone = contact.getString("value");
                                     }
                                 }
@@ -284,11 +304,18 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
 
                             }
 
+                            Business business = new Business(name,
+                                    businessLocation,
+                                    addressLine,
+                                    suburb,
+                                    id,
+                                    category,
+                                    phone);
+                            results.add(business);
                         } catch (Exception e) {
 
                         }
 
-                        //Business business = new Business(name,loc)
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
