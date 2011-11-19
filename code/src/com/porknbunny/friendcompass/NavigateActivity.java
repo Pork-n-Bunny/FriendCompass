@@ -20,9 +20,12 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
     private static final String TAG = "friendCompass.NavigateActivity";
     private LocationManager locationManager;
     private SensorManager sensorManager;
+    private Sensor mSensor;
     private Criteria criteria;
     private TextView distBiz, distFriend, bearBiz, bearFriend, bizName,bizAddress,bizSuburb, time,bearing;
     private Location myLocation, bizLocation, friendLocation;
+    private float[] mValues;
+    private float compassBearing;
 
     /**
      * Called when the activity is first created.
@@ -65,7 +68,7 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
 
         //sensor stuff
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-
+        mSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 
         
         //TODO DEBUG REMOVE
@@ -83,21 +86,26 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
         time.setText(""+ myLocation.getTime());
         distBiz.setText(""+myLocation.distanceTo(bizLocation));
         distFriend.setText(""+myLocation.distanceTo(friendLocation));
-        bearBiz.setText(""+myLocation.bearingTo(bizLocation));
-        bearFriend.setText(""+myLocation.bearingTo(friendLocation));
-        bearing.setText(""+myLocation.getBearing());
+        bearing.setText(""+compassBearing);
+        bearBiz.setText(""+(myLocation.bearingTo(bizLocation)-compassBearing));
+        bearFriend.setText(""+(myLocation.bearingTo(friendLocation)-compassBearing));
+        //bearing.setText(""+myLocation.getBearing());
     }
     
     @Override
     public void onStart() {
         super.onStart();
         locationManager.requestLocationUpdates(0, 0, criteria, this, null);
+        sensorManager.registerListener(this, mSensor,
+                SensorManager.SENSOR_DELAY_GAME);
+
     }
 
     @Override
     public void onStop() {
         super.onStop();
         locationManager.removeUpdates(this);
+        sensorManager.unregisterListener(this);
     }
 
     @Override
@@ -125,7 +133,12 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
     //--- bearings ---
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        mValues = sensorEvent.values;
+
+        compassBearing = mValues[0];
+        locatonUpdate();
+
+
     }
 
     @Override
