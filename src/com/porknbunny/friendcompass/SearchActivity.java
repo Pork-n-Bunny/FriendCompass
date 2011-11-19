@@ -8,6 +8,7 @@ import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,11 +33,20 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
+        setContentView(R.layout.search);
 
+        //--- searchField ---
         searchField = (EditText) findViewById(R.id.searh_field);
         searchField.addTextChangedListener(this);
+        searchField.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int i, KeyEvent keyEvent) {
+                return (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER);
+            }
+        });
 
+
+        //--- resultList ---
         results = new ArrayList<String>();
 
         //debug
@@ -118,18 +128,17 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            View itemView = convertView;
-            if (itemView == null) {
-                itemView = inflateService.inflate(R.layout.search_item, parent, false);
-                itemView.setTag(R.id.only_field, itemView.findViewById(R.id.only_field));
+            if (convertView == null) {
+                convertView = inflateService.inflate(R.layout.search_item, parent, false);
+                convertView.setTag(R.id.only_field, convertView.findViewById(R.id.only_field));
             }
 
             String searchItem = list.get(position);
             if (searchItem != null) {
-                TextView bodyTextView = (TextView) itemView.getTag(R.id.only_field);
+                TextView bodyTextView = (TextView) convertView.getTag(R.id.only_field);
                 bodyTextView.setText(searchItem);
             }
-            return itemView;
+            return convertView;
         }
     }
 }

@@ -10,6 +10,8 @@
             android:layout_height="wrap_content"
             android:selectAllOnFocus="true"
             android:text="Search"
+            android:lines="1"
+            android:maxLines="1"
 
             />
     <ScrollView android:layout_height="0dp"
