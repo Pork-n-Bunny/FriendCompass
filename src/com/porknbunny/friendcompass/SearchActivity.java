@@ -3,6 +3,7 @@ package com.porknbunny.friendcompass;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
@@ -45,14 +46,12 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
             }
         });
 
-
         //--- resultList ---
         results = new ArrayList<String>();
 
         //debug
         results.add("Hello");
         results.add("Good-bye");
-
 
         srAdapter = new SearchResultsAdapter(getApplicationContext(), R.id.only_field, results);
 
@@ -74,7 +73,6 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
         }
         return "";
     }
-
 
     private BufferedInputStream getUrl(String url) {
         try {
@@ -139,6 +137,27 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
                 bodyTextView.setText(searchItem);
             }
             return convertView;
+        }
+    }
+
+
+    //--- AsyncDoSearch ---
+    private class DownloadWebPageTask extends AsyncTask<String, Void, String> {
+        private String baseURL = "http://api.sensis.com.au/ob-20110511/test/search?key=cd4n3ez5zsf56ehevh6phr8w&query=hello&location=-37.818712214939296%2C+144.9567931238562&sortBy=DISTANCE";
+
+
+        @Override
+        protected String doInBackground(String... searchTerms) {
+            ArrayList<String> newList = new ArrayList<String>();
+            for (String searchTerm : searchTerms) {
+                getUrl(baseURL);
+            }
+            return response;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            textView.setText(result);
         }
     }
 }
