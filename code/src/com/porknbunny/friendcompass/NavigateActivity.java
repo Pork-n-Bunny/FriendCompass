@@ -1,5 +1,7 @@
 package com.porknbunny.friendcompass;
 
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -8,13 +10,24 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.MenuItem;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 
 public class NavigateActivity extends FragmentActivity implements LocationListener, SensorEventListener {
@@ -166,5 +179,168 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
 
         }
     }
+
+
+    private String getMetaData(String key) {
+        try {
+            ApplicationInfo ai = getPackageManager().getApplicationInfo(getPackageName(), PackageManager.GET_META_DATA);
+            Bundle bundle = ai.metaData;
+            String value = bundle.getString(key);
+            //Log.d(TAG, "Meta-data: " + key + " - " +value);
+            return value;
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e(TAG, "Failed to load meta-data Key: " + key + ", NameNotFound: " + e.getMessage());
+        } catch (NullPointerException e) {
+            Log.e(TAG, "Failed to load meta-data, NullPointer: " + e.getMessage());
+        }
+        return "";
+    }
+
+    private BufferedInputStream getUrl(String url) {
+        try {
+            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+            connection.setReadTimeout(5000);
+            InputStream inputStream = (InputStream) connection.getContent();
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream, TEMP_BUFF_SIZE);
+            int responseCode = connection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+
+                return bufferedInputStream;
+            }
+            Log.w(TAG, "Incorrect response for " + url + " : " + connection.getResponseCode());
+        } catch (Exception e) {
+            e.printStackTrace();
+            //Log.w(TAG, e.getMessage());
+            Log.w(TAG, "Could not get " + url);
+        }
+        return null;
+    }
+
+    //--- AsyncDoSearch ---
+    private class SAPIBusinessQuery extends AsyncTask<String, Void, String> {
+        private String url;
+        private final int BUFF_SIZE = 16384;
+        private final String sapi_key;
+
+        private SAPIQuery() {
+            sapi_key = getMetaData("SAPI_KEY");
+        }
+
+        @Override
+        protected String doInBackground(String... businessIDs) {
+            ArrayList<String> newList = new ArrayList<String>();
+            for (String businessID : businessIDs) {
+                try {
+                    url = "http://api.sensis.com.au/ob-20110511/test/getByListingId?key="
+                            + sapi_key
+                            + "&query="
+                            + URLEncoder.encode(businessID, "UTF-8");
+
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
+
+                BufferedInputStream inputStream = getUrl(url);
+
+                if (inputStream != null) {
+
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(BUFF_SIZE);
+                    try {
+                        if (inputStream != null) {
+                            byte[] tempBuff = new byte[BUFF_SIZE];
+                            int readCount;
+                            while ((readCount = inputStream.read(tempBuff)) != -1) {
+                                byteArrayOutputStream.write(tempBuff, 0, readCount);
+                            }
+                            byte[] newBuff = byteArrayOutputStream.toByteArray();
+                            inputStream.close();
+                            byteArrayOutputStream.close();
+                            String temp = new String(newBuff, "US_ASCII");
+                            return temp;
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
+
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            if (result != null) {
+                results = new ArrayList<Business>();
+                //time to parse some JSON!
+                try {
+                    JSONObject jsonObject = new JSONObject(result);
+                    JSONArray jsonArray = jsonObject.getJSONArray("results");
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        try {
+                            JSONObject jsonBusiness = jsonArray.getJSONObject(i);
+
+                            String name = jsonBusiness.getString("name");
+                            String id = jsonBusiness.getString("id");
+
+                            //address and gps
+                            JSONObject address = jsonBusiness.getJSONObject("primaryAddress");
+                            String latitudeStr = address.getString("latitude");
+                            String longitudeStr = address.getString("longitude");
+                            Double latitude = new Double(latitudeStr);
+                            Double longitude = new Double(longitudeStr);
+                            String addressLine = address.getString("addressLine");
+                            String suburb = address.getString("suburb");
+
+                            //category
+                            String category = "";
+                            try {
+                                JSONArray categories = jsonBusiness.getJSONArray("categories");
+                                for (int j = 0; j < categories.length(); j++) {
+                                    JSONObject cat = categories.getJSONObject(j);
+                                    category = cat.getString(name);
+                                }
+                            } catch (Exception e) {
+
+                            }
+
+                            //phone
+                            JSONArray contacts = jsonBusiness.getJSONArray("primaryContacts");
+                            String phone = "";
+                            try {
+                                for (int j = 0; j < contacts.length(); j++) {
+                                    JSONObject contact = contacts.getJSONObject(j);
+                                    if (contact.getString("type").compareTo("Phone") == 0) {
+                                        phone = contact.getString("value");
+                                    }
+                                }
+                            } catch (Exception e) {
+
+                            }
+
+                            Business business = new Business(name,
+                                    latitude,
+                                    longitude,
+                                    addressLine,
+                                    suburb,
+                                    id,
+                                    category,
+                                    phone);
+                            super.business = business;
+                        } catch (Exception e) {
+
+                        }
+
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                srAdapter.notifyDataSetChanged();
+            }
+        }
+    }
+
 
 }
