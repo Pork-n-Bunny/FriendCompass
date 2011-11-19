@@ -8,9 +8,13 @@ import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
@@ -103,12 +107,29 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
     //---- SearchResultsAdapter ---
     private class SearchResultsAdapter extends ArrayAdapter<String> {
         ArrayList<String> list;
+        LayoutInflater inflateService;
 
         public SearchResultsAdapter(Context context, int textViewResourceId, ArrayList list) {
             super(context, textViewResourceId, list);
             this.list = list;
+            inflateService = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
         }
 
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View itemView = convertView;
+            if (itemView == null) {
+                itemView = inflateService.inflate(R.layout.search_item, parent, false);
+                itemView.setTag(R.id.only_field, itemView.findViewById(R.id.only_field));
+            }
 
+            String searchItem = list.get(position);
+            if (searchItem != null) {
+                TextView bodyTextView = (TextView) itemView.getTag(R.id.only_field);
+                bodyTextView.setText(searchItem);
+            }
+            return itemView;
+        }
     }
 }
