@@ -283,9 +283,6 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
                             String longitudeStr = address.getString("longitude");
                             Double latitude = new Double(latitudeStr);
                             Double longitude = new Double(longitudeStr);
-                            Location businessLocation = new Location("SAPI");
-                            businessLocation.setLatitude(latitude);
-                            businessLocation.setLongitude(longitude);
                             String addressLine = address.getString("addressLine");
                             String suburb = address.getString("suburb");
 
@@ -316,7 +313,8 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
                             }
 
                             Business business = new Business(name,
-                                    businessLocation,
+                                    latitude,
+                                    longitude,
                                     addressLine,
                                     suburb,
                                     id,

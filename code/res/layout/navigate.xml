@@ -49,7 +49,7 @@
               android:layout_height="wrap_content"
             android:text="Noble Park"/>
 
-    <TextView android:id="@+id/bearing"
+    <TextView android:id="@+id/c_bearing"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:text="compass"/>

@@ -48,7 +48,7 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
         bizAddress = (TextView) findViewById(R.id.business_address);
         bizSuburb = (TextView) findViewById(R.id.business_suburb);
         time = (TextView) findViewById(R.id.time);
-        bearing = (TextView) findViewById(R.id.bearing);
+        bearing = (TextView) findViewById(R.id.c_bearing);
 
         bizAddress.setText(business.getAddressLine());
         bizName.setText(business.getName());
@@ -91,8 +91,8 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
         distBiz.setText(""+myLocation.distanceTo(bizLocation));
         distFriend.setText(""+myLocation.distanceTo(friendLocation));
         bearing.setText(""+compassBearing);
-        bearBiz.setText(""+(myLocation.bearingTo(bizLocation)+compassBearing));
-        bearFriend.setText(""+(myLocation.bearingTo(friendLocation)+compassBearing));
+        bearBiz.setText(""+((myLocation.bearingTo(bizLocation)+compassBearing)%360));
+        bearFriend.setText(""+((myLocation.bearingTo(friendLocation)+compassBearing)%360));
         //bearing.setText(""+myLocation.getBearing());
     }
     
