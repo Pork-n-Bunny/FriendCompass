@@ -3,8 +3,14 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
-              android:orientation="vertical">
+              android:orientation="vertical"
+              android:padding="20dp"
+              android:background="@drawable/patch"
+              >
     <TextView android:id="@+id/si_name"
+              android:textColor="#436BA3"
+              android:textStyle="bold"
+              android:textSize="20sp"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:text="placeholder"/>
@@ -16,14 +22,29 @@
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:text="placeholder"/>
-    <TextView android:id="@+id/si_distance"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:text="placeholder"/>
-    <TextView android:id="@+id/si_edistance"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:text="placeholder"/>
+    <LinearLayout android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal"
+                  android:layout_marginTop="15dp"
+                  >
+        <ImageView android:layout_height="wrap_content"
+                   android:layout_width="wrap_content"
+                   android:layout_marginRight="5dp"
+                   android:src="@drawable/si_distance_icon" />
+        <TextView android:id="@+id/si_distance"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_marginRight="20dp"
+                  android:text="placeholder"/>
+        <ImageView android:layout_height="wrap_content"
+                   android:layout_width="wrap_content"
+                   android:layout_marginRight="5dp"
+                   android:src="@drawable/si_edistance_icon" />
+        <TextView android:id="@+id/si_edistance"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="placeholder"/>
+    </LinearLayout>
     <TextView android:id="@+id/si_phone"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
