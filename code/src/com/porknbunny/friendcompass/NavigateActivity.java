@@ -87,8 +87,8 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
         distBiz.setText(""+myLocation.distanceTo(bizLocation));
         distFriend.setText(""+myLocation.distanceTo(friendLocation));
         bearing.setText(""+compassBearing);
-        bearBiz.setText(""+(myLocation.bearingTo(bizLocation)-compassBearing));
-        bearFriend.setText(""+(myLocation.bearingTo(friendLocation)-compassBearing));
+        bearBiz.setText(""+(myLocation.bearingTo(bizLocation)+compassBearing));
+        bearFriend.setText(""+(myLocation.bearingTo(friendLocation)+compassBearing));
         //bearing.setText(""+myLocation.getBearing());
     }
     
