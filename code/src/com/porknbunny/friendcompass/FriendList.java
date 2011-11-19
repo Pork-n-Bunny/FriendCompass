@@ -70,12 +70,12 @@ public class FriendList extends FragmentActivity implements LocationListener{
                 if(friend.getBizID().length() > 0){
                     Intent intent = new Intent(getApplicationContext(), NavigateActivity.class);
                     intent.putExtra("bizID", friend.getBizID());
-                    intent.putExtra("Friend", friend);
+                    intent.putExtra("friend", friend);
                     startActivity(intent);
                 }
                 else{
                     Intent intent = new Intent(getApplicationContext(), SearchActivity.class);
-                    intent.putExtra("Friend", friend);
+                    intent.putExtra("friend", friend);
                     startActivity(intent);
                 }
                 

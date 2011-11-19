@@ -40,6 +40,7 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
     private float[] mValues;
     private float compassBearing;
     private Business navBusiness;
+    private Friend friend;
 
     /**
      * Called when the activity is first created.
@@ -52,9 +53,9 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
 
         //---home
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-
-        navBusiness = (Business) getIntent().getExtras().getSerializable("navBusiness");
+                
+        String bizID = getIntent().getExtras().getString("business");
+        friend = (Friend) getIntent().getExtras().getSerializable("friend");
         
         //lots of textviews
         distBiz = (TextView) findViewById(R.id.distance_to_business);

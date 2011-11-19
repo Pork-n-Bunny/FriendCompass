@@ -40,11 +40,18 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
     private SearchResultsAdapter srAdapter;
     private ArrayList<Business> results;
     private Location location;
-
+    private Location edistant;
+    private Friend friend;
+    
+    
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.search);
 
+        friend = (Friend) getIntent().getExtras().getSerializable("friend");
+        
+        
+        
         //---home
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -77,7 +84,8 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
                 // When clicked, show a toast with the TextView text
                 Business business = results.get(position);
                 Intent intent = new Intent(getApplicationContext(), NavigateActivity.class);
-                intent.putExtra("business",business);
+                intent.putExtra("business",business.getId());
+                intent.putExtra("friend",friend);
                 startActivity(intent);
             }
         });
@@ -98,6 +106,10 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
             }
         }
 
+        edistant = new Location("pnb");
+        edistant.setLatitude((location.getLatitude()+friend.getLat())/2);
+        edistant.setLongitude((location.getLongitude()+friend.getLongi())/2);
+        
         //initial search
         new SAPIQuery().execute(new String[]{""});
     }
@@ -201,7 +213,7 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
                 ((TextView) convertView.getTag(R.id.si_address)).setText(business.getAddressLine());
                 ((TextView) convertView.getTag(R.id.si_category)).setText(business.getCategory());
                 ((TextView) convertView.getTag(R.id.si_distance)).setText("" + NumberFormat.getInstance().format((int) business.getLocation().distanceTo(location)) + "m");
-                ((TextView) convertView.getTag(R.id.si_edistance)).setText("" + NumberFormat.getInstance().format((int) business.getLocation().distanceTo(location)) + "m");
+                ((TextView) convertView.getTag(R.id.si_edistance)).setText("" + NumberFormat.getInstance().format((int) business.getLocation().distanceTo(edistant)) + "m");
                 ((TextView) convertView.getTag(R.id.si_name)).setText(business.getName());
                 ((TextView) convertView.getTag(R.id.si_phone)).setText(business.getPhoneNumber());
                 ((TextView) convertView.getTag(R.id.si_suburb)).setText(business.getSuburb());
@@ -232,7 +244,7 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
                             + "&query="
                             + URLEncoder.encode(searchTerm, "UTF-8")
                             + "&location="
-                            + URLEncoder.encode(location.getLatitude() + ", " + location.getLongitude(), "UTF-8")
+                            + URLEncoder.encode(edistant.getLatitude() +", " + edistant.getLongitude(), "UTF-8")
                             + "&sortBy=DISTANCE";
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
