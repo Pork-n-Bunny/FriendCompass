@@ -19,6 +19,8 @@ import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -36,7 +38,7 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
     private EditText searchField;
     private ListView listView;
     private SearchResultsAdapter srAdapter;
-    private ArrayList<String> results;
+    private ArrayList<Business> results;
     private Location location;
 
     public void onCreate(Bundle savedInstanceState) {
@@ -52,14 +54,14 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
                 boolean isEnter = (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER);
                 if (isEnter) {
                     SAPIQuery task = new SAPIQuery();
-                    task.execute(new String[]{"chinese"});
+                    task.execute(new String[]{searchField.getText().toString()});
                 }
                 return isEnter;
             }
         });
 
         //--- resultList ---
-        results = new ArrayList<String>();
+        results = new ArrayList<Business>();
 
         srAdapter = new SearchResultsAdapter();
 
@@ -130,8 +132,8 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
     @Override
     public void afterTextChanged(Editable editable) {
         //do search
-        //SAPIQuery task = new SAPIQuery();
-        //task.execute(new String[]{"chinese"});
+        SAPIQuery task = new SAPIQuery();
+        task.execute(new String[]{searchField.getText().toString()});
     }
 
     //---- SearchResultsAdapter ---
@@ -237,10 +239,61 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
         @Override
         protected void onPostExecute(String result) {
             if (result != null) {
-
+                results = new ArrayList<String>();
                 //time to parse some JSON!
+                try {
+                    JSONObject jsonObject = new JSONObject(result);
+                    JSONArray jsonArray = jsonObject.getJSONArray("results");
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        try {
+                            JSONObject jsonBusiness = jsonArray.getJSONObject(i);
 
-                results.add(result);
+                            String name = jsonBusiness.getString("name");
+                            String id = jsonBusiness.getString("id");
+
+                            //address and gps
+                            JSONObject address = jsonBusiness.getJSONObject("primaryAddress");
+                            String latitudeStr = address.getString("latitude");
+                            String longitudeStr = address.getString("longitude");
+                            Double latitude = new Double(latitudeStr);
+                            Double longitude = new Double(longitudeStr);
+                            Location businessLocation = new Location("SAPI");
+                            businessLocation.setLatitude(latitude);
+                            businessLocation.setLongitude(longitude);
+
+
+                            //category
+                            String category = "";
+                            JSONArray categories = jsonBusiness.getJSONArray("categories");
+                            for (int j = 0; j < categories.length(); j++) {
+                                JSONObject cat = categories.getJSONObject(j);
+                                category = cat.getString(name);
+                            }
+
+                            //phone
+                            JSONArray contacts = jsonBusiness.getJSONArray("primaryContacts");
+                            String phone = "";
+                            try {
+                                for (int j = 0; j < contacts.length(); j++) {
+                                    JSONObject contact = contacts.getJSONObject(j);
+                                    if (contact.getString("type").compareTo("Phone")) {
+                                        phone = contact.getString("value");
+                                    }
+                                }
+                            } catch (Exception e) {
+
+                            }
+
+                        } catch (Exception e) {
+
+                        }
+
+                        //Business business = new Business(name,loc)
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
                 srAdapter.notifyDataSetChanged();
             }
         }
