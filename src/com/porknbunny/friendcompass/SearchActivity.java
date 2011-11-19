@@ -15,14 +15,16 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.*;
+import android.widget.BaseAdapter;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.TextView;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -42,19 +44,15 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
         setContentView(R.layout.search);
 
         //--- searchField ---
-        searchField = (EditText) findViewById(R.id.searh_field);
+        searchField = (EditText) findViewById(R.id.search_field);
         searchField.addTextChangedListener(this);
         searchField.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
                 boolean isEnter = (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER);
                 if (isEnter) {
-                    //DownloadWebPageTask task = new DownloadWebPageTask();
-                    //task.execute(new String[]{"chinese"});
-
-                    results.add("no");
-                    Toast.makeText(getApplicationContext(), "" + results.size(), Toast.LENGTH_SHORT).show();
-                    srAdapter.notifyDataSetChanged();
+                    SAPIQuery task = new SAPIQuery();
+                    task.execute(new String[]{"chinese"});
                 }
                 return isEnter;
             }
@@ -62,10 +60,6 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
 
         //--- resultList ---
         results = new ArrayList<String>();
-
-        //debug
-        results.add("Hello");
-        results.add("Good-bye");
 
         srAdapter = new SearchResultsAdapter();
 
@@ -136,7 +130,7 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
     @Override
     public void afterTextChanged(Editable editable) {
         //do search
-        //DownloadWebPageTask task = new DownloadWebPageTask();
+        //SAPIQuery task = new SAPIQuery();
         //task.execute(new String[]{"chinese"});
     }
 
@@ -185,13 +179,11 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
 
 
     //--- AsyncDoSearch ---
-    private class DownloadWebPageTask extends AsyncTask<String, Void, String> {
-        //private String url = "http://api.sensis.com.au/ob-20110511/test/search?key=cd4n3ez5zsf56ehevh6phr8w&query=hello&location=-37.818712214939296%2C+144.9567931238562&sortBy=DISTANCE";
+    private class SAPIQuery extends AsyncTask<String, Void, String> {
+        private String url;
         private final int BUFF_SIZE = 16384;
 
-        private String url = "http://www.google.com/";
-
-        private DownloadWebPageTask() {
+        private SAPIQuery() {
         }
 
         @Override
@@ -199,7 +191,7 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
             ArrayList<String> newList = new ArrayList<String>();
             for (String searchTerm : searchTerms) {
                 try {
-                    URL searchUrl = new URL("http://api.sensis.com.au/ob-20110511/test/search?key="
+                    url = "http://api.sensis.com.au/ob-20110511/test/search?key="
                             + getMetaData("SAPI_KEY")
 
                             + "&query="
@@ -208,9 +200,7 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
 
                             + "&location="
 
-                            + URLEncoder.encode(location.getLatitude() + ", " + location.getLongitude(), "UTF-8"));
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                            + URLEncoder.encode(location.getLatitude() + ", " + location.getLongitude(), "UTF-8");
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
                 }
@@ -247,6 +237,9 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
         @Override
         protected void onPostExecute(String result) {
             if (result != null) {
+
+                //time to parse some JSON!
+
                 results.add(result);
                 srAdapter.notifyDataSetChanged();
             }
