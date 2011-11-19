@@ -1,11 +1,11 @@
 <?php
-$link = mysql_connect('localhost:3307', 'root', 'root');
+$link = mysql_connect('localhost:3307', 'nkvabkuh_fc', 'N7(F#3@m3h!w');
 
 if (!$link) {
     die('Could not connect: ' . mysql_error());
 }
 //echo 'Connected successfully\n';
-mysql_select_db('fc', $link);
+mysql_select_db('nkvabkuh_fc', $link);
 
 
 //http://localhost:8888/?user=kvilliers&lat=-37.23&long=142.34&biz=h3ffh093h&friend=leis2leis

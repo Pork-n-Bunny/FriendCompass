@@ -4,7 +4,9 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.Intent;
+import android.location.Criteria;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -36,12 +38,15 @@ import java.util.List;
  * Time: 01:51
  * To change this template use File | Settings | File Templates.
  */
-public class FriendList extends FragmentActivity {
+public class FriendList extends FragmentActivity implements LocationListener{
     private static final String TAG = "FriendList";
-    ArrayList<String> friendList;
+    ArrayList<Friend> friendList;
     FriendListAdapter friendAdapter;
     ListView listView;
     private String userName;
+    LocationManager locationManager;
+    private Criteria criteria;
+
 
     private Location location;
 
@@ -51,7 +56,7 @@ public class FriendList extends FragmentActivity {
 
 
         //--- friendsList ---
-        friendList = new ArrayList<String>();
+        friendList = new ArrayList<Friend>();
 
         friendAdapter = new FriendListAdapter();
 
@@ -60,11 +65,20 @@ public class FriendList extends FragmentActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id) {
-                // When clicked, show a toast with the TextView text
-                //Business business = results.get(position);
-                //Intent intent = new Intent(getApplicationContext(), NavigateActivity.class);
-                //intent.putExtra("business",business);
-                //startActivity(intent);
+                Friend friend = friendList.get(position);
+                
+                if(friend.getBizID().length() > 0){
+                    Intent intent = new Intent(getApplicationContext(), NavigateActivity.class);
+                    intent.putExtra("bizID", friend.getBizID());
+                    intent.putExtra("Friend", friend);
+                    startActivity(intent);
+                }
+                else{
+                    Intent intent = new Intent(getApplicationContext(), SearchActivity.class);
+                    intent.putExtra("Friend", friend);
+                    startActivity(intent);
+                }
+                
             }
         });
 
@@ -72,7 +86,7 @@ public class FriendList extends FragmentActivity {
         userName = getUsername();
 
         //-- location --
-        LocationManager locationManager = (LocationManager) getSystemService(getApplicationContext().LOCATION_SERVICE);
+        locationManager = (LocationManager) getSystemService(getApplicationContext().LOCATION_SERVICE);
         List<String> providers = locationManager.getAllProviders();
 
         double accuracy = -1;
@@ -85,6 +99,26 @@ public class FriendList extends FragmentActivity {
                 location = tempLoc;
             }
         }
+
+        criteria = new Criteria();
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        criteria.setBearingAccuracy(Criteria.ACCURACY_HIGH);
+
+        new FriendQuery().execute("");
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        locationManager.requestLocationUpdates(0, 0, criteria, this, null);
+
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        locationManager.removeUpdates(this);
+
     }
 
     public String getUsername(){
@@ -107,6 +141,27 @@ public class FriendList extends FragmentActivity {
                 return null;
         }else
             return null;
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        this.location = location;
+        new FriendQuery().execute("");
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void onProviderEnabled(String s) {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public void onProviderDisabled(String s) {
+        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     private class FriendListAdapter extends BaseAdapter{
@@ -135,18 +190,25 @@ public class FriendList extends FragmentActivity {
         @Override
         public View getView ( int position, View convertView, ViewGroup parent){
             if (convertView == null) {
-                convertView = inflateService.inflate(R.layout.search_item, parent, false);
+                convertView = inflateService.inflate(R.layout.friend_item, parent, false);
                 int resourceList[] = {R.id.fl_name,
-                        R.id.fl_dist,};
+                        R.id.fl_dist,
+                        R.id.fl_business_set,
+                        R.id.fl_time,
+                        R.id.fl_userset
+                        };
                 for (int res : resourceList) {
                     convertView.setTag(res, convertView.findViewById(res));
                 }
             }
 
-            String friend = friendList.get(position);
+            Friend friend = friendList.get(position);
             if (friend != null) {
-                ((TextView) convertView.getTag(R.id.fl_name)).setText(friend);
-                ((TextView) convertView.getTag(R.id.fl_dist)).setText(friend);
+                ((TextView) convertView.getTag(R.id.fl_name)).setText(friend.getUserid());
+                ((TextView) convertView.getTag(R.id.fl_dist)).setText(""+friend.getLocation().distanceTo(location));
+                ((TextView) convertView.getTag(R.id.fl_business_set)).setText(""+friend.getBizID());
+                ((TextView) convertView.getTag(R.id.fl_time)).setText(""+friend.getTime());
+                ((TextView) convertView.getTag(R.id.fl_userset)).setText(""+friend.getFriend());
             }
             return convertView;
         }
@@ -160,19 +222,11 @@ public class FriendList extends FragmentActivity {
 
             @Override
             protected String doInBackground(String... searchTerms) {
-                ArrayList<String> newList = new ArrayList<String>();
                 for (String searchTerm : searchTerms) {
-                    try {
-                        location.getLatitude();
-                        url = "http://api.sensis.com.au/ob-20110511/test/search?key="
-                                + "&query="
-                                + URLEncoder.encode(searchTerm, "UTF-8")
-                                + "&location="
-                                + URLEncoder.encode(location.getLatitude() + ", " + location.getLongitude(), "UTF-8")
-                                + "&sortBy=DISTANCE";
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                    }
+
+                        url = "http://friendcompass.porknbunny.com/?user="
+                        + userName +"&lat="+location.getLatitude()+"&long="+location.getLongitude()+"&biz=&friend=";
+
 
                     BufferedInputStream inputStream = getUrl(url);
 
@@ -206,63 +260,27 @@ public class FriendList extends FragmentActivity {
             @Override
             protected void onPostExecute(String result) {
                 if (result != null) {
-                    friendList = new ArrayList<String>();
+                    friendList = new ArrayList<Friend>();
                     //time to parse some JSON!
                     try {
-                        JSONObject jsonObject = new JSONObject(result);
-                        JSONArray jsonArray = jsonObject.getJSONArray("results");
-                        for (int i = 0; i < jsonArray.length(); i++) {
-                            try {
-                                JSONObject jsonBusiness = jsonArray.getJSONObject(i);
-
-                                String name = jsonBusiness.getString("name");
-                                String id = jsonBusiness.getString("id");
-
-                                //address and gps
-                                JSONObject address = jsonBusiness.getJSONObject("primaryAddress");
-                                String latitudeStr = address.getString("latitude");
-                                String longitudeStr = address.getString("longitude");
-                                Double latitude = new Double(latitudeStr);
-                                Double longitude = new Double(longitudeStr);
-                                String addressLine = address.getString("addressLine");
-                                String suburb = address.getString("suburb");
-
-                                //category
-                                String category = "";
-                                try {
-                                    JSONArray categories = jsonBusiness.getJSONArray("categories");
-                                    for (int j = 0; j < categories.length(); j++) {
-                                        JSONObject cat = categories.getJSONObject(j);
-                                        category = cat.getString(name);
-                                    }
-                                } catch (Exception e) {
-
-                                }
-
-                                //phone
-                                JSONArray contacts = jsonBusiness.getJSONArray("primaryContacts");
-                                String phone = "";
-                                try {
-                                    for (int j = 0; j < contacts.length(); j++) {
-                                        JSONObject contact = contacts.getJSONObject(j);
-                                        if (contact.getString("type").compareTo("Phone") == 0) {
-                                            phone = contact.getString("value");
-                                        }
-                                    }
-                                } catch (Exception e) {
-
-                                }
-
-                                friendList.add("Hello");
-                            } catch (Exception e) {
-
-                            }
-
+                        JSONArray list = new JSONArray(result);
+                        for (int i = 0; i < list.length(); i++) {
+                            JSONObject jsonFriend = list.getJSONObject(i);
+                            Friend tempFriend = new Friend(jsonFriend.getString("userid"),
+                                    jsonFriend.getString("friend"),
+                                    jsonFriend.getString("businessid"),
+                                    jsonFriend.getDouble("lat"),
+                                    jsonFriend.getDouble("long"),
+                                    jsonFriend.getInt("time"));
+                            //if(tempFriend.getUserid().compareTo(userName) != 0){
+                                friendList.add(tempFriend);
+                            //}
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                        
                     }
-
+                    catch (Exception e){
+                        
+                    }
                     friendAdapter.notifyDataSetChanged();
                 }
             }

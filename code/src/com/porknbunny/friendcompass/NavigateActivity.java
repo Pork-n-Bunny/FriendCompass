@@ -16,7 +16,6 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.MenuItem;
 import android.util.Log;
 import android.widget.TextView;
-import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -40,7 +39,7 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
     private Location myLocation, bizLocation, friendLocation;
     private float[] mValues;
     private float compassBearing;
-    private Business business;
+    private Business navBusiness;
 
     /**
      * Called when the activity is first created.
@@ -55,7 +54,7 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 
-        business = (Business) getIntent().getExtras().getSerializable("business");
+        navBusiness = (Business) getIntent().getExtras().getSerializable("navBusiness");
         
         //lots of textviews
         distBiz = (TextView) findViewById(R.id.distance_to_business);
@@ -68,10 +67,10 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
         time = (TextView) findViewById(R.id.time);
         bearing = (TextView) findViewById(R.id.c_bearing);
 
-        bizAddress.setText(business.getAddressLine());
-        bizName.setText(business.getName());
-        bizSuburb.setText(business.getSuburb());
-        bizLocation = business.getLocation();
+        bizAddress.setText(navBusiness.getAddressLine());
+        bizName.setText(navBusiness.getName());
+        bizSuburb.setText(navBusiness.getSuburb());
+        bizLocation = navBusiness.getLocation();
 
         //location stuff
         locationManager = (LocationManager) getSystemService(getApplicationContext().LOCATION_SERVICE);
@@ -132,7 +131,7 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
 
     @Override
     public void onLocationChanged(Location location) {
-       myLocation = location;
+        myLocation = location;
         locatonUpdate();
     }
 
@@ -197,6 +196,7 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
     }
 
     private BufferedInputStream getUrl(String url) {
+        int TEMP_BUFF_SIZE = 16384;
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setReadTimeout(5000);
@@ -222,7 +222,7 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
         private final int BUFF_SIZE = 16384;
         private final String sapi_key;
 
-        private SAPIQuery() {
+        private SAPIBusinessQuery() {
             sapi_key = getMetaData("SAPI_KEY");
         }
 
@@ -272,7 +272,6 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
         @Override
         protected void onPostExecute(String result) {
             if (result != null) {
-                results = new ArrayList<Business>();
                 //time to parse some JSON!
                 try {
                     JSONObject jsonObject = new JSONObject(result);
@@ -327,7 +326,7 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
                                     id,
                                     category,
                                     phone);
-                            super.business = business;
+                            navBusiness = business;
                         } catch (Exception e) {
 
                         }
@@ -336,8 +335,6 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-
-                srAdapter.notifyDataSetChanged();
             }
         }
     }
