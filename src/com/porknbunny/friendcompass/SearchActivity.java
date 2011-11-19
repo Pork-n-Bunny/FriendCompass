@@ -3,6 +3,8 @@ package com.porknbunny.friendcompass;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -18,11 +20,12 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import java.io.BufferedInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.List;
 
 public class SearchActivity extends FragmentActivity implements TextWatcher {
     private static final String TAG = "FriendCompass.SearchActivity";
@@ -31,6 +34,7 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
     private ListView listView;
     private SearchResultsAdapter srAdapter;
     private ArrayList<String> results;
+    private Location location;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,6 +61,19 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
 
         listView = (ListView) findViewById(R.id.result_view);
         listView.setAdapter(srAdapter);
+
+
+        //-- location --
+        LocationManager locationManager = (LocationManager) getSystemService(getApplicationContext().LOCATION_SERVICE);
+        List<String> providers = locationManager.getAllProviders();
+
+        double accuracy = -1;
+        for (String provider : providers) {
+            Location tempLoc = locationManager.getLastKnownLocation();
+            if (accuracy < 0 || tempLoc.getAccuracy() < accuracy) {
+                location = locationManager.getLastKnownLocation();
+            }
+        }
     }
 
     private String getMetaData(String key) {
@@ -103,13 +120,14 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
 
     @Override
     public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-        //To change body of implemented methods use File | Settings | File Templates.
+
     }
 
     @Override
     public void afterTextChanged(Editable editable) {
         //do search
-
+        DownloadWebPageTask task = new DownloadWebPageTask();
+        task.execute(new String[]{"chinese"});
     }
 
     //---- SearchResultsAdapter ---
@@ -144,20 +162,67 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
     //--- AsyncDoSearch ---
     private class DownloadWebPageTask extends AsyncTask<String, Void, String> {
         private String baseURL = "http://api.sensis.com.au/ob-20110511/test/search?key=cd4n3ez5zsf56ehevh6phr8w&query=hello&location=-37.818712214939296%2C+144.9567931238562&sortBy=DISTANCE";
-
+        private final int BUFF_SIZE = 16384;
 
         @Override
         protected String doInBackground(String... searchTerms) {
             ArrayList<String> newList = new ArrayList<String>();
             for (String searchTerm : searchTerms) {
-                getUrl(baseURL);
+                URL searchUrl = new URL("http://api.sensis.com.au/ob-20110511/test/search?key=" + API_KEY
+
+                        + "&query="
+
+                        + URLEncoder.encode(searchTerm, "UTF-8")
+
+                        + "&location="
+
+                        + URLEncoder.encode(location, "UTF-8"));
+
+                BufferedInputStream inputStream = getUrl(baseURL);
+
+                if (inputStream != null) {
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(BUFF_SIZE);
+
+                    byte[] tempBuff = new byte[BUFF_SIZE];
+                    int readCount;
+                    try {
+                        while ((readCount = inputStream.read(tempBuff)) != -1) {
+                            byteArrayOutputStream.write(tempBuff, 0, readCount);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    }
+                    byte[] newBuff = byteArrayOutputStream.toByteArray();
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        byteArrayOutputStream.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    String temp = null;
+                    try {
+                        temp = new String(newBuff, "US_ASCII");
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                    return temp;
+                }
+
+
             }
-            return response;
+            return null;
         }
 
         @Override
         protected void onPostExecute(String result) {
-            textView.setText(result);
+            if (result != null) {
+                results.add(result);
+                srAdapter.notifyDataSetChanged();
+            }
         }
     }
 }
