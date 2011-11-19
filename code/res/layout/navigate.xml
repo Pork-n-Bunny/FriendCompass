@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+            android:orientation="vertical">
+
+    <TextView android:id="@+id/time"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:text="time"/>
+
+    <TextView android:id="@+id/distance_to_business"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+            android:text="234m"/>
+
+    <TextView android:id="@+id/distance_to_friend"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+            android:text="734m"/>
+
+
+    <TextView android:id="@+id/bearing_to_business"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+            android:text="172@"/>
+
+
+    <TextView android:id="@+id/bearing_to_friend"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+            android:text="25@"/>
+
+    <TextView android:id="@+id/business_name"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+            android:text="Pork 'n' Bunny"/>
+
+
+    <TextView android:id="@+id/business_address"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+            android:text="2/439 Princes Hwy"/>
+
+
+    <TextView android:id="@+id/business_suburb"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+            android:text="Noble Park"/>
+
+    <TextView android:id="@+id/bearing"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:text="compass"/>
+
+</LinearLayout>

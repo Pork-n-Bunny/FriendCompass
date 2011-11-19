@@ -19,7 +19,7 @@
                    android:value="cd4n3ez5zsf56ehevh6phr8w"/>
 
 
-        <activity android:name="TestGPSActivity"
+        <activity android:name=".NavigateActivity"
                   android:label="@string/app_name"
                   android:configChanges="orientation|keyboardHidden"
                 >
