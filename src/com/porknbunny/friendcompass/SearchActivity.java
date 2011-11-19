@@ -15,13 +15,14 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.*;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -46,7 +47,16 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
         searchField.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View view, int i, KeyEvent keyEvent) {
-                return (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER);
+                boolean isEnter = (keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER);
+                if (isEnter) {
+                    //DownloadWebPageTask task = new DownloadWebPageTask();
+                    //task.execute(new String[]{"chinese"});
+
+                    results.add("no");
+                    Toast.makeText(getApplicationContext(), "" + results.size(), Toast.LENGTH_SHORT).show();
+                    srAdapter.notifyDataSetChanged();
+                }
+                return isEnter;
             }
         });
 
@@ -57,7 +67,7 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
         results.add("Hello");
         results.add("Good-bye");
 
-        srAdapter = new SearchResultsAdapter(getApplicationContext(), R.id.only_field, results);
+        srAdapter = new SearchResultsAdapter();
 
         listView = (ListView) findViewById(R.id.result_view);
         listView.setAdapter(srAdapter);
@@ -69,9 +79,9 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
 
         double accuracy = -1;
         for (String provider : providers) {
-            Location tempLoc = locationManager.getLastKnownLocation();
+            Location tempLoc = locationManager.getLastKnownLocation(provider);
             if (accuracy < 0 || tempLoc.getAccuracy() < accuracy) {
-                location = locationManager.getLastKnownLocation();
+                location = tempLoc;
             }
         }
     }
@@ -97,8 +107,8 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
             connection.setReadTimeout(5000);
             InputStream inputStream = (InputStream) connection.getContent();
             BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream, TEMP_BUFF_SIZE);
-
-            if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+            int responseCode = connection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
 
                 return bufferedInputStream;
             }
@@ -126,30 +136,45 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
     @Override
     public void afterTextChanged(Editable editable) {
         //do search
-        DownloadWebPageTask task = new DownloadWebPageTask();
-        task.execute(new String[]{"chinese"});
+        //DownloadWebPageTask task = new DownloadWebPageTask();
+        //task.execute(new String[]{"chinese"});
     }
 
     //---- SearchResultsAdapter ---
-    private class SearchResultsAdapter extends ArrayAdapter<String> {
-        ArrayList<String> list;
+    private class SearchResultsAdapter extends BaseAdapter {
         LayoutInflater inflateService;
 
-        public SearchResultsAdapter(Context context, int textViewResourceId, ArrayList list) {
-            super(context, textViewResourceId, list);
-            this.list = list;
+        public SearchResultsAdapter() {
             inflateService = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         }
 
         @Override
+        public int getCount() {
+            return results.size();
+        }
+
+        @Override
+        public Object getItem(int i) {
+            return i;
+        }
+
+        @Override
+        public long getItemId(int i) {
+            return i;
+        }
+
+        @Override
         public View getView(int position, View convertView, ViewGroup parent) {
+            Log.v(TAG, "" + position + " " + results.size());
+
+
             if (convertView == null) {
                 convertView = inflateService.inflate(R.layout.search_item, parent, false);
                 convertView.setTag(R.id.only_field, convertView.findViewById(R.id.only_field));
             }
 
-            String searchItem = list.get(position);
+            String searchItem = results.get(position);
             if (searchItem != null) {
                 TextView bodyTextView = (TextView) convertView.getTag(R.id.only_field);
                 bodyTextView.setText(searchItem);
@@ -161,55 +186,57 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
 
     //--- AsyncDoSearch ---
     private class DownloadWebPageTask extends AsyncTask<String, Void, String> {
-        private String baseURL = "http://api.sensis.com.au/ob-20110511/test/search?key=cd4n3ez5zsf56ehevh6phr8w&query=hello&location=-37.818712214939296%2C+144.9567931238562&sortBy=DISTANCE";
+        //private String url = "http://api.sensis.com.au/ob-20110511/test/search?key=cd4n3ez5zsf56ehevh6phr8w&query=hello&location=-37.818712214939296%2C+144.9567931238562&sortBy=DISTANCE";
         private final int BUFF_SIZE = 16384;
+
+        private String url = "http://www.google.com/";
+
+        private DownloadWebPageTask() {
+        }
 
         @Override
         protected String doInBackground(String... searchTerms) {
             ArrayList<String> newList = new ArrayList<String>();
             for (String searchTerm : searchTerms) {
-                URL searchUrl = new URL("http://api.sensis.com.au/ob-20110511/test/search?key=" + API_KEY
+                try {
+                    URL searchUrl = new URL("http://api.sensis.com.au/ob-20110511/test/search?key="
+                            + getMetaData("SAPI_KEY")
 
-                        + "&query="
+                            + "&query="
 
-                        + URLEncoder.encode(searchTerm, "UTF-8")
+                            + URLEncoder.encode(searchTerm, "UTF-8")
 
-                        + "&location="
+                            + "&location="
 
-                        + URLEncoder.encode(location, "UTF-8"));
+                            + URLEncoder.encode(location.getLatitude() + ", " + location.getLongitude(), "UTF-8"));
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                }
 
-                BufferedInputStream inputStream = getUrl(baseURL);
+                BufferedInputStream inputStream = getUrl(url);
 
                 if (inputStream != null) {
-                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(BUFF_SIZE);
 
-                    byte[] tempBuff = new byte[BUFF_SIZE];
-                    int readCount;
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(BUFF_SIZE);
                     try {
-                        while ((readCount = inputStream.read(tempBuff)) != -1) {
-                            byteArrayOutputStream.write(tempBuff, 0, readCount);
+                        if (inputStream != null) {
+                            byte[] tempBuff = new byte[BUFF_SIZE];
+                            int readCount;
+                            while ((readCount = inputStream.read(tempBuff)) != -1) {
+                                byteArrayOutputStream.write(tempBuff, 0, readCount);
+                            }
+                            byte[] newBuff = byteArrayOutputStream.toByteArray();
+                            inputStream.close();
+                            byteArrayOutputStream.close();
+                            String temp = new String(newBuff, "US_ASCII");
+                            return temp;
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                    }
-                    byte[] newBuff = byteArrayOutputStream.toByteArray();
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    try {
-                        byteArrayOutputStream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    String temp = null;
-                    try {
-                        temp = new String(newBuff, "US_ASCII");
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
-                    }
-                    return temp;
+
                 }
 
 
