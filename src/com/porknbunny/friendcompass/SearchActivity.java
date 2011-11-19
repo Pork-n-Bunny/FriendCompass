@@ -1,5 +1,6 @@
 package com.porknbunny.friendcompass;
 
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -7,24 +8,42 @@ import android.support.v4.app.FragmentActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ListView;
 
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 
 public class SearchActivity extends FragmentActivity implements TextWatcher {
     private static final String TAG = "FriendCompass.SearchActivity";
     private static final int TEMP_BUFF_SIZE = 16384;
     private EditText searchField;
+    private ListView listView;
+    private SearchResultsAdapter srAdapter;
+    private ArrayList<String> results;
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
 
-        searchField = (EditText) findViewById(R.id.searchField);
+        searchField = (EditText) findViewById(R.id.searh_field);
         searchField.addTextChangedListener(this);
+
+        results = new ArrayList<String>();
+
+        //debug
+        results.add("Hello");
+        results.add("Good-bye");
+
+
+        srAdapter = new SearchResultsAdapter(getApplicationContext(), R.id.only_field, results);
+
+        listView = (ListView) findViewById(R.id.result_view);
+        listView.setAdapter(srAdapter);
     }
 
     private String getMetaData(String key) {
@@ -78,6 +97,18 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
     @Override
     public void afterTextChanged(Editable editable) {
         //do search
+
+    }
+
+    //---- SearchResultsAdapter ---
+    private class SearchResultsAdapter extends ArrayAdapter<String> {
+        ArrayList<String> list;
+
+        public SearchResultsAdapter(Context context, int textViewResourceId, ArrayList list) {
+            super(context, textViewResourceId, list);
+            this.list = list;
+        }
+
 
     }
 }
