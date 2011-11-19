@@ -20,6 +20,10 @@
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
               android:text="placeholder"/>
+    <TextView android:id="@+id/si_edistance"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="placeholder"/>
     <TextView android:id="@+id/si_phone"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"

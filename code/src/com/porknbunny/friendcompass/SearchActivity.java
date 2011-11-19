@@ -29,6 +29,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -173,6 +174,7 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
                 int resourceList[] = {R.id.si_address,
                         R.id.si_category,
                         R.id.si_distance,
+                        R.id.si_edistance,
                         R.id.si_name,
                         R.id.si_phone,
                         R.id.si_suburb};
@@ -185,7 +187,8 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
             if (business != null) {
                 ((TextView) convertView.getTag(R.id.si_address)).setText(business.getAddressLine());
                 ((TextView) convertView.getTag(R.id.si_category)).setText(business.getCategory());
-                ((TextView) convertView.getTag(R.id.si_distance)).setText("" + business.getLocation().distanceTo(location));
+                ((TextView) convertView.getTag(R.id.si_distance)).setText("" + NumberFormat.getInstance().format((int) business.getLocation().distanceTo(location)) + "m");
+                ((TextView) convertView.getTag(R.id.si_edistance)).setText("" + NumberFormat.getInstance().format((int) business.getLocation().distanceTo(location)) + "m");
                 ((TextView) convertView.getTag(R.id.si_name)).setText(business.getName());
                 ((TextView) convertView.getTag(R.id.si_phone)).setText(business.getPhoneNumber());
                 ((TextView) convertView.getTag(R.id.si_suburb)).setText(business.getSuburb());
