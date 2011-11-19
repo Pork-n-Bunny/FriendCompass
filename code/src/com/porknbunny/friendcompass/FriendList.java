@@ -1,5 +1,7 @@
 package com.porknbunny.friendcompass;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
@@ -11,19 +13,20 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.BaseAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -34,9 +37,11 @@ import java.util.List;
  * To change this template use File | Settings | File Templates.
  */
 public class FriendList extends FragmentActivity {
+    private static final String TAG = "FriendList";
     ArrayList<String> friendList;
     FriendListAdapter friendAdapter;
     ListView listView;
+    private String userName;
 
     private Location location;
 
@@ -63,6 +68,8 @@ public class FriendList extends FragmentActivity {
             }
         });
 
+        //getuser
+        userName = getUsername();
 
         //-- location --
         LocationManager locationManager = (LocationManager) getSystemService(getApplicationContext().LOCATION_SERVICE);
@@ -80,6 +87,27 @@ public class FriendList extends FragmentActivity {
         }
     }
 
+    public String getUsername(){
+        AccountManager manager = AccountManager.get(this);
+        Account[] accounts = manager.getAccountsByType("com.google");
+        List<String> possibleEmails = new LinkedList<String>();
+
+        for (Account account : accounts) {
+            // TODO: Check possibleEmail against an email regex or treat
+            // account.name as an email address only for certain account.type values.
+            possibleEmails.add(account.name);
+        }
+
+        if(!possibleEmails.isEmpty() && possibleEmails.get(0) != null){
+            String email = possibleEmails.get(0);
+            String[] parts = email.split("@");
+            if(parts.length > 0 && parts[0] != null)
+                return parts[0];
+            else
+                return null;
+        }else
+            return null;
+    }
 
     private class FriendListAdapter extends BaseAdapter{
         LayoutInflater inflateService;
@@ -137,7 +165,6 @@ public class FriendList extends FragmentActivity {
                     try {
                         location.getLatitude();
                         url = "http://api.sensis.com.au/ob-20110511/test/search?key="
-                                + sapi_key
                                 + "&query="
                                 + URLEncoder.encode(searchTerm, "UTF-8")
                                 + "&location="
@@ -179,7 +206,7 @@ public class FriendList extends FragmentActivity {
             @Override
             protected void onPostExecute(String result) {
                 if (result != null) {
-                    results = new ArrayList<Business>();
+                    friendList = new ArrayList<String>();
                     //time to parse some JSON!
                     try {
                         JSONObject jsonObject = new JSONObject(result);
@@ -226,15 +253,7 @@ public class FriendList extends FragmentActivity {
 
                                 }
 
-                                Business business = new Business(name,
-                                        latitude,
-                                        longitude,
-                                        addressLine,
-                                        suburb,
-                                        id,
-                                        category,
-                                        phone);
-                                results.add(business);
+                                friendList.add("Hello");
                             } catch (Exception e) {
 
                             }
@@ -244,8 +263,33 @@ public class FriendList extends FragmentActivity {
                         e.printStackTrace();
                     }
 
-                    srAdapter.notifyDataSetChanged();
+                    friendAdapter.notifyDataSetChanged();
                 }
             }
         }
+
+
+
+    private BufferedInputStream getUrl(String url) {
+        int TEMP_BUFF_SIZE = 16384;
+        try {
+            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+            connection.setReadTimeout(5000);
+            InputStream inputStream = (InputStream) connection.getContent();
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream, TEMP_BUFF_SIZE);
+            int responseCode = connection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+
+                return bufferedInputStream;
+            }
+            Log.w(TAG, "Incorrect response for " + url + " : " + connection.getResponseCode());
+        } catch (Exception e) {
+            e.printStackTrace();
+            //Log.w(TAG, e.getMessage());
+            Log.w(TAG, "Could not get " + url);
+        }
+        return null;
     }
+
+
+}

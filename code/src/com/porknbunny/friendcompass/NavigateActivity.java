@@ -10,6 +10,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.view.MenuItem;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -35,6 +36,10 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.navigate);
+
+
+        //---home
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 
         business = (Business) getIntent().getExtras().getSerializable("business");
@@ -149,4 +154,17 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
     public void onAccuracyChanged(Sensor sensor, int i) {
         //To change body of implemented methods use File | Settings | File Templates.
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+
+        }
+    }
+
 }

@@ -9,6 +9,7 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.view.MenuItem;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -43,6 +44,10 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.search);
+
+        //---home
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
 
         //--- searchField ---
         searchField = (EditText) findViewById(R.id.search_field);
@@ -332,6 +337,19 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
 
                 srAdapter.notifyDataSetChanged();
             }
+        }
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+
         }
     }
 }
