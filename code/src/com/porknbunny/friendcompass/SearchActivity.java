@@ -1,6 +1,7 @@
 package com.porknbunny.friendcompass;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -15,10 +16,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -68,6 +66,16 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
 
         listView = (ListView) findViewById(R.id.result_view);
         listView.setAdapter(srAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+                // When clicked, show a toast with the TextView text
+                Business business = results.get(position);
+                Intent intent = new Intent(getApplicationContext(), NavigateActivity.class);
+                intent.putExtra("business",business);
+                startActivity(intent);
+            }
+        });
 
 
         //-- location --

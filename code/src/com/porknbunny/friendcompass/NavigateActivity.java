@@ -26,6 +26,7 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
     private Location myLocation, bizLocation, friendLocation;
     private float[] mValues;
     private float compassBearing;
+    private Business business;
 
     /**
      * Called when the activity is first created.
@@ -34,6 +35,9 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.navigate);
+
+
+        business = (Business) getIntent().getExtras().getSerializable("business");
         
         //lots of textviews
         distBiz = (TextView) findViewById(R.id.distance_to_business);
@@ -46,7 +50,10 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
         time = (TextView) findViewById(R.id.time);
         bearing = (TextView) findViewById(R.id.bearing);
 
-
+        bizAddress.setText(business.getAddressLine());
+        bizName.setText(business.getName());
+        bizSuburb.setText(business.getSuburb());
+        bizLocation = business.getLocation();
 
         //location stuff
         locationManager = (LocationManager) getSystemService(getApplicationContext().LOCATION_SERVICE);
@@ -72,9 +79,6 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
 
         
         //TODO DEBUG REMOVE
-        bizLocation = new Location("TEST");
-        bizLocation.setLatitude(-37.8133895);
-        bizLocation.setLongitude(144.9628322);
         friendLocation = new Location("TEST");
         friendLocation.setLatitude(-33.8133895);
         friendLocation.setLongitude(142.9628322);

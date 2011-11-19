@@ -2,6 +2,8 @@ package com.porknbunny.friendcompass;
 
 import android.location.Location;
 
+import java.io.Serializable;
+
 /**
  * Created by IntelliJ IDEA.
  * User: pigsnowball
@@ -9,7 +11,7 @@ import android.location.Location;
  * Time: 20:37
  * To change this template use File | Settings | File Templates.
  */
-public class Business {
+public class Business implements Serializable {
     public String name;
     public Location location;
     public String addressLine;
