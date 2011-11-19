@@ -2,8 +2,12 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+<<<<<<< HEAD
       <module fileurl="file://$PROJECT_DIR$/../../porknbunny/code/externals/ActionbarSherlock/3.42/3.42.iml" filepath="$PROJECT_DIR$/../../porknbunny/code/externals/ActionbarSherlock/3.42/3.42.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../porknbunny/code/externals/ActionbarSherlock/3.42/ActionbarSherlock3.42.iml" filepath="$PROJECT_DIR$/../../porknbunny/code/externals/ActionbarSherlock/3.42/ActionbarSherlock3.42.iml" />
+=======
+      <module fileurl="file://$PROJECT_DIR$/../external/ActionbarSherlock/3.42/3.42.iml" filepath="$PROJECT_DIR$/../external/ActionbarSherlock/3.42/3.42.iml" />
+>>>>>>> c81694d63cf911fa53aa1a421727e85d1399e235
       <module fileurl="file://$PROJECT_DIR$/FriendCompass.iml" filepath="$PROJECT_DIR$/FriendCompass.iml" />
     </modules>
   </component>

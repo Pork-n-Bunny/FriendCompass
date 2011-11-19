@@ -2,6 +2,8 @@ package com.porknbunny.friendcompass;
 
 import android.location.Location;
 
+import java.io.Serializable;
+
 /**
  * Created by IntelliJ IDEA.
  * User: pigsnowball
@@ -9,42 +11,40 @@ import android.location.Location;
  * Time: 20:37
  * To change this template use File | Settings | File Templates.
  */
-public class Business {
+public class Business implements Serializable {
     public String name;
-    public Location location;
+    //public Location location;
     public String addressLine;
     public String suburb;
     public String phoneNumber;
     public String id;
     public String category;
-
-    public Business(String name, Location location, String addressLine, String suburb, String id, String category, String phoneNumber) {
+    public double latitude;
+    public double longitude;
+    
+    
+    public Business(String name, double latitude, double longitude, String addressLine, String suburb, String id, String category, String phoneNumber) {
         this.name = name;
-        this.location = location;
         this.addressLine = addressLine;
         this.suburb = suburb;
         this.id = id;
         this.phoneNumber = phoneNumber;
         this.category = category;
-    }
-
-    @Override
-    public String toString() {
-        return "Business{" +
-                "name='" + name + '\'' +
-                ", location=" + location +
-                ", addressLine='" + addressLine + '\'' +
-                ", suburb='" + suburb + '\'' +
-                ", phoneNumber='" + phoneNumber + '\'' +
-                ", id='" + id + '\'' +
-                ", category='" + category + '\'' +
-                '}';
+        this.latitude=latitude;
+        this.longitude=longitude;
     }
 
     public String getCategory() {
         return category;
     }
 
+    public Location getLocation(){
+        Location location = new Location("SAPI");
+        location.setLatitude(latitude);
+        location.setLongitude(longitude);
+        return location;
+    }
+    
     public void setCategory(String category) {
         this.category = category;
     }
@@ -57,12 +57,20 @@ public class Business {
         this.name = name;
     }
 
-    public Location getLocation() {
-        return location;
+    public double getLatitude() {
+        return latitude;
     }
 
-    public void setLocation(Location location) {
-        this.location = location;
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 
     public String getAddressLine() {

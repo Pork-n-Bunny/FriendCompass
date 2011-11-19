@@ -1,6 +1,7 @@
 package com.porknbunny.friendcompass;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -8,6 +9,7 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.view.MenuItem;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -15,10 +17,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.EditText;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -41,10 +40,21 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
     private SearchResultsAdapter srAdapter;
     private ArrayList<Business> results;
     private Location location;
-
+    private Location edistant;
+    private Friend friend;
+    
+    
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.search);
+
+        friend = (Friend) getIntent().getExtras().getSerializable("friend");
+        
+        
+        
+        //---home
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
 
         //--- searchField ---
         searchField = (EditText) findViewById(R.id.search_field);
@@ -68,6 +78,17 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
 
         listView = (ListView) findViewById(R.id.result_view);
         listView.setAdapter(srAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+                // When clicked, show a toast with the TextView text
+                Business business = results.get(position);
+                Intent intent = new Intent(getApplicationContext(), NavigateActivity.class);
+                intent.putExtra("business",business.getId());
+                intent.putExtra("friend",friend);
+                startActivity(intent);
+            }
+        });
 
 
         //-- location --
@@ -85,6 +106,10 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
             }
         }
 
+        edistant = new Location("pnb");
+        edistant.setLatitude((location.getLatitude()+friend.getLat())/2);
+        edistant.setLongitude((location.getLongitude()+friend.getLongi())/2);
+        
         //initial search
         new SAPIQuery().execute(new String[]{""});
     }
@@ -188,7 +213,7 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
                 ((TextView) convertView.getTag(R.id.si_address)).setText(business.getAddressLine());
                 ((TextView) convertView.getTag(R.id.si_category)).setText(business.getCategory());
                 ((TextView) convertView.getTag(R.id.si_distance)).setText("" + NumberFormat.getInstance().format((int) business.getLocation().distanceTo(location)) + "m");
-                ((TextView) convertView.getTag(R.id.si_edistance)).setText("" + NumberFormat.getInstance().format((int) business.getLocation().distanceTo(location)) + "m");
+                ((TextView) convertView.getTag(R.id.si_edistance)).setText("" + NumberFormat.getInstance().format((int) business.getLocation().distanceTo(edistant)) + "m");
                 ((TextView) convertView.getTag(R.id.si_name)).setText(business.getName());
                 ((TextView) convertView.getTag(R.id.si_phone)).setText(business.getPhoneNumber());
                 ((TextView) convertView.getTag(R.id.si_suburb)).setText(business.getSuburb());
@@ -219,7 +244,7 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
                             + "&query="
                             + URLEncoder.encode(searchTerm, "UTF-8")
                             + "&location="
-                            + URLEncoder.encode(location.getLatitude() + ", " + location.getLongitude(), "UTF-8")
+                            + URLEncoder.encode(edistant.getLatitude() +", " + edistant.getLongitude(), "UTF-8")
                             + "&sortBy=DISTANCE";
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -275,9 +300,6 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
                             String longitudeStr = address.getString("longitude");
                             Double latitude = new Double(latitudeStr);
                             Double longitude = new Double(longitudeStr);
-                            Location businessLocation = new Location("SAPI");
-                            businessLocation.setLatitude(latitude);
-                            businessLocation.setLongitude(longitude);
                             String addressLine = address.getString("addressLine");
                             String suburb = address.getString("suburb");
 
@@ -308,7 +330,8 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
                             }
 
                             Business business = new Business(name,
-                                    businessLocation,
+                                    latitude,
+                                    longitude,
                                     addressLine,
                                     suburb,
                                     id,
@@ -326,6 +349,19 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
 
                 srAdapter.notifyDataSetChanged();
             }
+        }
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+
         }
     }
 }
