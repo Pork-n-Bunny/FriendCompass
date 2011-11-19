@@ -2,8 +2,9 @@ package com.porknbunny.friendcompass;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 
-public class TestGPSActivity extends Activity
+public class TestGPSActivity extends FragmentActivity
 {
     /** Called when the activity is first created. */
     @Override
