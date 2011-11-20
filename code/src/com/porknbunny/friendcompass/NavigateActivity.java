@@ -1,5 +1,7 @@
 package com.porknbunny.friendcompass;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
@@ -15,6 +17,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.MenuItem;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.TextView;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -27,6 +30,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 public class NavigateActivity extends FragmentActivity implements LocationListener, SensorEventListener {
@@ -35,12 +39,16 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
     private SensorManager sensorManager;
     private Sensor mSensor;
     private Criteria criteria;
-    private TextView distBiz, distFriend, bearBiz, bearFriend, bizName,bizAddress,bizSuburb, time,bearing;
-    private Location myLocation, bizLocation, friendLocation;
+    //private TextView distBiz, distFriend, bearBiz, bearFriend, bizName,bizAddress,bizSuburb, time,bearing;
+    private Location myLocation;
     private float[] mValues;
     private float compassBearing;
     private Business navBusiness;
     private Friend friend;
+    private String userName;
+    private ImageView bizHud, friendHud;
+    private TextView bizDist,bizName,bizAddr, bizSub,friendDist, friendName;
+
 
     /**
      * Called when the activity is first created.
@@ -48,7 +56,7 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.navigate);
+        setContentView(R.layout.);
 
 
         //---home
@@ -56,8 +64,13 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
                 
         String bizID = getIntent().getExtras().getString("business");
         friend = (Friend) getIntent().getExtras().getSerializable("friend");
-        
+
+
+        new SAPIBusinessQuery().execute(bizID);
+        userName = getUsername();
+
         //lots of textviews
+        /*
         distBiz = (TextView) findViewById(R.id.distance_to_business);
         distFriend = (TextView) findViewById(R.id.distance_to_friend);
         bearBiz = (TextView) findViewById(R.id.bearing_to_business);
@@ -67,11 +80,16 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
         bizSuburb = (TextView) findViewById(R.id.business_suburb);
         time = (TextView) findViewById(R.id.time);
         bearing = (TextView) findViewById(R.id.c_bearing);
+        */
 
-        bizAddress.setText(navBusiness.getAddressLine());
-        bizName.setText(navBusiness.getName());
-        bizSuburb.setText(navBusiness.getSuburb());
-        bizLocation = navBusiness.getLocation();
+        bizHud  = (ImageView) findViewById(R.id.n);
+        friendHud  = (ImageView) findViewById(R.id.bearing_to_business);
+        bizDist = (TextView) findViewById(R.id.bearing_to_business);
+        bizName = (TextView) findViewById(R.id.bearing_to_business);
+        bizAddr = (TextView) findViewById(R.id.bearing_to_business);
+        bizSub = (TextView) findViewById(R.id.bearing_to_business);
+        friendDist = (TextView) findViewById(R.id.bearing_to_business);
+        friendName = (TextView) findViewById(R.id.bearing_to_business);
 
         //location stuff
         locationManager = (LocationManager) getSystemService(getApplicationContext().LOCATION_SERVICE);
@@ -95,23 +113,43 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 
-        
-        //TODO DEBUG REMOVE
-        friendLocation = new Location("TEST");
-        friendLocation.setLatitude(-33.8133895);
-        friendLocation.setLongitude(142.9628322);
-
         locatonUpdate();
     }
 
+
+    public String getUsername(){
+        AccountManager manager = AccountManager.get(this);
+        Account[] accounts = manager.getAccountsByType("com.google");
+        List<String> possibleEmails = new LinkedList<String>();
+
+        for (Account account : accounts) {
+            // TODO: Check possibleEmail against an email regex or treat
+            // account.name as an email address only for certain account.type values.
+            possibleEmails.add(account.name);
+        }
+
+        if(!possibleEmails.isEmpty() && possibleEmails.get(0) != null){
+            String email = possibleEmails.get(0);
+            String[] parts = email.split("@");
+            if(parts.length > 0 && parts[0] != null)
+                return parts[0];
+            else
+                return null;
+        }else
+            return null;
+    }
+
+
     private void locatonUpdate(){
         time.setText(""+ myLocation.getTime());
-        distBiz.setText(""+myLocation.distanceTo(bizLocation));
-        distFriend.setText(""+myLocation.distanceTo(friendLocation));
+        if(navBusiness != null){
+        distBiz.setText(""+myLocation.distanceTo(navBusiness.getLocation()));
+        distFriend.setText(""+myLocation.distanceTo(friend.getLocation()));
         bearing.setText(""+compassBearing);
-        bearBiz.setText(""+((myLocation.bearingTo(bizLocation)+compassBearing)%360));
-        bearFriend.setText(""+((myLocation.bearingTo(friendLocation)+compassBearing)%360));
-        //bearing.setText(""+myLocation.getBearing());
+        bearBiz.setText(""+((myLocation.bearingTo(navBusiness.getLocation())+compassBearing)%360));
+        bearFriend.setText(""+((myLocation.bearingTo(friend.getLocation())+compassBearing)%360));
+        }
+        new FriendQuery().execute();
     }
     
     @Override
@@ -215,6 +253,79 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
             Log.w(TAG, "Could not get " + url);
         }
         return null;
+    }
+
+    //--- AsyncDoSearch ---
+    private class FriendQuery extends AsyncTask<String, Void, String> {
+        private String url;
+        private final int BUFF_SIZE = 16384;
+
+        @Override
+        protected String doInBackground(String... searchTerms) {
+            for (String searchTerm : searchTerms) {
+
+                url = "http://friendcompass.porknbunny.com/?user="
+                        + userName +"&lat="+myLocation.getLatitude()+"&long="+ myLocation.getLongitude()+"&biz="+ navBusiness.getId() +"&friend=" + friend.getUserid();
+
+
+                BufferedInputStream inputStream = getUrl(url);
+
+                if (inputStream != null) {
+
+                    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(BUFF_SIZE);
+                    try {
+                        if (inputStream != null) {
+                            byte[] tempBuff = new byte[BUFF_SIZE];
+                            int readCount;
+                            while ((readCount = inputStream.read(tempBuff)) != -1) {
+                                byteArrayOutputStream.write(tempBuff, 0, readCount);
+                            }
+                            byte[] newBuff = byteArrayOutputStream.toByteArray();
+                            inputStream.close();
+                            byteArrayOutputStream.close();
+                            String temp = new String(newBuff, "US_ASCII");
+                            return temp;
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
+
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            if (result != null) {
+                //time to parse some JSON!
+                try {
+                    JSONArray list = new JSONArray(result);
+                    for (int i = 0; i < list.length(); i++) {
+                        JSONObject jsonFriend = list.getJSONObject(i);
+                        Friend tempFriend = new Friend(jsonFriend.getString("userid"),
+                                jsonFriend.getString("friend"),
+                                jsonFriend.getString("businessid"),
+                                jsonFriend.getDouble("lat"),
+                                jsonFriend.getDouble("long"),
+                                jsonFriend.getInt("time"));
+                        //if(tempFriend.getUserid().compareTo(userName) != 0){
+                        if(friend.getUserid().compareTo(tempFriend.getUserid()) == 0){
+                            friend.setLat(tempFriend.getLat());
+                            friend.setLongi(tempFriend.getLongi());
+                            friend.setTime(tempFriend.getTime());
+                        }
+                        //}
+                    }
+
+                }
+                catch (Exception e){
+
+                }
+            }
+        }
     }
 
     //--- AsyncDoSearch ---
@@ -328,6 +439,10 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
                                     category,
                                     phone);
                             navBusiness = business;
+
+                            bizAddress.setText(navBusiness.getAddressLine());
+                            bizName.setText(navBusiness.getName());
+                            bizSuburb.setText(navBusiness.getSuburb());
                         } catch (Exception e) {
 
                         }
