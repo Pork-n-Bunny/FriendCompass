@@ -1,26 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="wrap_content"
+              android:layout_width="match_parent"
               android:layout_height="wrap_content"
-              android:orientation="vertical">
+              android:orientation="vertical"
+              android:padding="20dp"
+              android:background="@drawable/patch"
+              >
     <TextView android:id="@+id/fl_name"
+              android:textColor="#436BA3"
+              android:textStyle="bold"
+              android:textSize="20sp"
               android:layout_height="wrap_content"
               android:layout_width="wrap_content"
               />
+    <LinearLayout android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal"
+            >
+    <ImageView android:layout_height="wrap_content"
+               android:layout_width="wrap_content"
+               android:layout_marginRight="5dp"
+               android:src="@drawable/si_distance_icon" />
     <TextView android:id="@+id/fl_dist"
               android:layout_height="wrap_content"
               android:layout_width="wrap_content"
+              android:layout_marginRight="20dp"
             />
+    <ImageView android:layout_height="wrap_content"
+               android:layout_width="wrap_content"
+               android:layout_marginRight="5dp"
+               android:src="@drawable/si_time" />
+    <TextView android:id="@+id/fl_time"
+              android:layout_height="wrap_content"
+              android:layout_width="wrap_content"
+            />
+    </LinearLayout>
     <TextView android:id="@+id/fl_business_set"
               android:layout_height="wrap_content"
               android:layout_width="wrap_content"
             />
     <TextView android:id="@+id/fl_userset"
-              android:layout_height="wrap_content"
-              android:layout_width="wrap_content"
-            />
-    <TextView android:id="@+id/fl_time"
               android:layout_height="wrap_content"
               android:layout_width="wrap_content"
             />
