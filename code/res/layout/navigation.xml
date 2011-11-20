@@ -109,6 +109,16 @@
                 android:textSize="15sp"
                 android:gravity="center"
                 />
+            <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="1800m"
+                    android:textColor="#ffffff"
+                    android:id="@+id/na_friend_to_biz"
+                    android:layout_below="@id/na_friend_name"
+                    android:textSize="15sp"
+                    android:gravity="center"
+                    />
         </RelativeLayout>
     </FrameLayout>
 </LinearLayout>

@@ -48,7 +48,7 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
     private Friend friend;
     private String userName;
     private ImageView bizHud, friendHud;
-    private TextView bizDist,bizName,bizAddr, bizSub,friendDist, friendName;
+    private TextView bizDist,bizName,bizAddr, bizSub,friendDist, friendName,friendToBiz;
 
 
     /**
@@ -90,8 +90,10 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
         bizAddr = (TextView) findViewById(R.id.na_biz_addr);
         bizSub = (TextView) findViewById(R.id.na_biz_suburb);
         friendDist = (TextView) findViewById(R.id.na_friend_distance);
+        friendToBiz = (TextView) findViewById(R.id.na_friend_to_biz);
         friendName = (TextView) findViewById(R.id.na_friend_name);
-
+        friendName.setText(friend.getUserid());
+        
         //location stuff
         locationManager = (LocationManager) getSystemService(getApplicationContext().LOCATION_SERVICE);
         criteria = new Criteria();
@@ -146,7 +148,10 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
             //TODO NICE NUMBERS
         bizDist.setText(""+NumberFormat.getInstance().format(myLocation.distanceTo(navBusiness.getLocation()))+"m");
         friendDist.setText("" + NumberFormat.getInstance().format((int) myLocation.distanceTo(friend.getLocation())) + "m");
-        float bearingBiz = ((myLocation.bearingTo(navBusiness.getLocation())+compassBearing)%360);
+            friendToBiz.setText("" + NumberFormat.getInstance().format((int) navBusiness.getLocation().distanceTo(friend.getLocation())) + "m");
+
+
+            float bearingBiz = ((myLocation.bearingTo(navBusiness.getLocation())+compassBearing)%360);
         float bearingFriend = ((myLocation.bearingTo(friend.getLocation())+compassBearing)%360);
         updateHUD(bizHud, bearingBiz);
         updateHUD(friendHud, bearingFriend);
