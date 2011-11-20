@@ -90,7 +90,6 @@ public class SearchActivity extends FragmentActivity implements TextWatcher {
             }
         });
 
-
         //-- location --
         LocationManager locationManager = (LocationManager) getSystemService(getApplicationContext().LOCATION_SERVICE);
         List<String> providers = locationManager.getAllProviders();

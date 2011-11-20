@@ -2,6 +2,7 @@ package com.porknbunny.friendcompass;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
@@ -12,13 +13,16 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.MenuItem;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -49,7 +53,7 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
     private String userName;
     private ImageView bizHud, friendHud;
     private TextView bizDist,bizName,bizAddr, bizSub,friendDist, friendName,friendToBiz;
-
+    private String bizID;
 
     /**
      * Called when the activity is first created.
@@ -63,7 +67,7 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
         //---home
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
                 
-        String bizID = getIntent().getExtras().getString("business");
+        bizID = getIntent().getExtras().getString("business");
         friend = (Friend) getIntent().getExtras().getSerializable("friend");
 
 
@@ -120,6 +124,20 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
     }
 
 
+    public void gmapsBusiness(View view){
+        //Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("geo:"+navBusiness.getLatitude()+","+navBusiness.getLongitude()+"?q="+navBusiness.getLatitude()+","+navBusiness.getLongitude()+"("+navBusiness.getName()+"+"+navBusiness.getName()+")"));
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("geo:"+navBusiness.getLatitude()+","+navBusiness.getLongitude()+"?q="+navBusiness.getLatitude()+","+navBusiness.getLongitude()+"("+URLEncoder.encode(navBusiness.getName())+")"));
+        startActivity(intent);
+
+    }
+
+    public void gmapsFriend(View view){
+        //Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("geo:"+navBusiness.getLatitude()+","+navBusiness.getLongitude()+"?q="+navBusiness.getLatitude()+","+navBusiness.getLongitude()+"("+navBusiness.getName()+"+"+navBusiness.getName()+")"));
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("geo:"+friend.getLat()+","+friend.getLongi()+"?q="+friend.getLat()+","+friend.getLongi()+"("+friend.getUserid()+")"));
+        startActivity(intent);
+
+    }
+
     public String getUsername(){
         AccountManager manager = AccountManager.get(this);
         Account[] accounts = manager.getAccountsByType("com.google");
@@ -146,18 +164,18 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
     private void locationUpdate(){
         if(navBusiness != null){
             //TODO NICE NUMBERS
-        bizDist.setText(""+NumberFormat.getInstance().format(myLocation.distanceTo(navBusiness.getLocation()))+"m");
+        bizDist.setText(""+NumberFormat.getInstance().format( (int) myLocation.distanceTo(navBusiness.getLocation()))+"m");
         friendDist.setText("" + NumberFormat.getInstance().format((int) myLocation.distanceTo(friend.getLocation())) + "m");
-            friendToBiz.setText("" + NumberFormat.getInstance().format((int) navBusiness.getLocation().distanceTo(friend.getLocation())) + "m");
+        friendToBiz.setText("" + NumberFormat.getInstance().format((int) navBusiness.getLocation().distanceTo(friend.getLocation())) + "m");
 
 
-            float bearingBiz = ((myLocation.bearingTo(navBusiness.getLocation())+compassBearing)%360);
+        float bearingBiz = ((myLocation.bearingTo(navBusiness.getLocation())+compassBearing)%360);
         float bearingFriend = ((myLocation.bearingTo(friend.getLocation())+compassBearing)%360);
         updateHUD(bizHud, bearingBiz);
         updateHUD(friendHud, bearingFriend);
 
         }
-        new FriendQuery().execute();
+        new FriendQuery().execute("");
     }
 
     private void updateHUD(ImageView view, float bearing){
@@ -317,7 +335,7 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
             for (String searchTerm : searchTerms) {
 
                 url = "http://friendcompass.porknbunny.com/?user="
-                        + userName +"&lat="+myLocation.getLatitude()+"&long="+ myLocation.getLongitude()+"&biz="+ navBusiness.getId() +"&friend=" + friend.getUserid();
+                        + userName +"&lat="+myLocation.getLatitude()+"&long="+ myLocation.getLongitude()+"&biz="+ bizID +"&friend=" + friend.getUserid();
 
 
                 BufferedInputStream inputStream = getUrl(url);
@@ -487,11 +505,10 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
                                     longitude,
                                     addressLine,
                                     suburb,
-                                    id,
+                                    bizID,
                                     category,
                                     phone);
                             navBusiness = business;
-
                             bizAddr.setText(navBusiness.getAddressLine());
                             bizName.setText(navBusiness.getName());
                             bizSub.setText(navBusiness.getSuburb());

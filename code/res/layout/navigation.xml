@@ -21,6 +21,7 @@
                 android:src="@drawable/greenfill1"
                 android:adjustViewBounds="true"
                 android:id="@+id/na_biz_hud"
+                android:onClick="gmapsBusiness"
                 />
         <RelativeLayout
                 android:layout_width="match_parent"
@@ -56,6 +57,7 @@
                     android:textColor="#ffffff"
                     android:textSize="15dp"
                     android:gravity="center"
+                    android:onClick="gmapsBusiness"
                     />
             <TextView
                     android:id="@+id/na_biz_suburb"
@@ -83,6 +85,7 @@
                 android:layout_height="wrap_content"
                 android:src="@drawable/greenfill1"
                 android:id="@+id/na_friend_hud"
+                android:onClick="gmapsFriend"
                 />
         <RelativeLayout
                 android:layout_width="match_parent"
@@ -98,6 +101,7 @@
                 android:textStyle="bold"
                 android:textSize="15sp"
                 android:gravity="center"
+                android:onClick="gmapsFriend"
                 />
         <TextView
                 android:layout_width="match_parent"
