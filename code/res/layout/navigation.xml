@@ -38,8 +38,8 @@
                 android:gravity="center"
                 />
         <TextView
-                android:id="@+id/si_name"
-                android:layout_below="@+id/na_biz_name"
+                android:id="@+id/na_biz_name"
+                android:layout_below="@+id/na_biz_distance"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="The York Butter Factory"
@@ -48,8 +48,8 @@
                 android:gravity="center"
                 />
             <TextView
-                    android:id="@+id/si_address"
-                    android:layout_below="@+id/na_biz_addr"
+                    android:id="@+id/na_biz_addr"
+                    android:layout_below="@+id/na_biz_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="66 King St"
@@ -58,8 +58,8 @@
                     android:gravity="center"
                     />
             <TextView
-                    android:id="@+id/si_suburb"
-                    android:layout_below="@+id/na_biz_suburb"
+                    android:id="@+id/na_biz_suburb"
+                    android:layout_below="@+id/na_biz_addr"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Melbourne"
@@ -104,7 +104,8 @@
                 android:layout_height="wrap_content"
                 android:text="Friend name"
                 android:textColor="#ffffff"
-                android:layout_below="@+id/na_friend_distance"
+                android:id="@+id/na_friend_name"
+                android:layout_below="@id/na_friend_distance"
                 android:textSize="15sp"
                 android:gravity="center"
                 />

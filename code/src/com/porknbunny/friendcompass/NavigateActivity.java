@@ -56,7 +56,7 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.);
+        setContentView(R.layout.navigation);
 
 
         //---home
@@ -82,14 +82,14 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
         bearing = (TextView) findViewById(R.id.c_bearing);
         */
 
-        bizHud  = (ImageView) findViewById(R.id.n);
-        friendHud  = (ImageView) findViewById(R.id.bearing_to_business);
-        bizDist = (TextView) findViewById(R.id.bearing_to_business);
-        bizName = (TextView) findViewById(R.id.bearing_to_business);
-        bizAddr = (TextView) findViewById(R.id.bearing_to_business);
-        bizSub = (TextView) findViewById(R.id.bearing_to_business);
-        friendDist = (TextView) findViewById(R.id.bearing_to_business);
-        friendName = (TextView) findViewById(R.id.bearing_to_business);
+        bizHud  = (ImageView) findViewById(R.id.na_biz_hud);
+        friendHud  = (ImageView) findViewById(R.id.na_friend_hud);
+        bizDist = (TextView) findViewById(R.id.na_biz_distance);
+        bizName = (TextView) findViewById(R.id.na_biz_name);
+        bizAddr = (TextView) findViewById(R.id.na_biz_addr);
+        bizSub = (TextView) findViewById(R.id.na_biz_suburb);
+        friendDist = (TextView) findViewById(R.id.na_friend_distance);
+        friendName = (TextView) findViewById(R.id.na_friend_name);
 
         //location stuff
         locationManager = (LocationManager) getSystemService(getApplicationContext().LOCATION_SERVICE);
@@ -113,7 +113,7 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         mSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION);
 
-        locatonUpdate();
+        locationUpdate();
     }
 
 
@@ -140,17 +140,62 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
     }
 
 
-    private void locatonUpdate(){
-        time.setText(""+ myLocation.getTime());
+    private void locationUpdate(){
         if(navBusiness != null){
-        distBiz.setText(""+myLocation.distanceTo(navBusiness.getLocation()));
-        distFriend.setText(""+myLocation.distanceTo(friend.getLocation()));
-        bearing.setText(""+compassBearing);
-        bearBiz.setText(""+((myLocation.bearingTo(navBusiness.getLocation())+compassBearing)%360));
-        bearFriend.setText(""+((myLocation.bearingTo(friend.getLocation())+compassBearing)%360));
+        bizDist.setText(""+myLocation.distanceTo(navBusiness.getLocation()));
+        friendDist.setText("" + myLocation.distanceTo(friend.getLocation()));
+        float bearingBiz = ((myLocation.bearingTo(navBusiness.getLocation())+compassBearing)%360);
+        float bearingFriend = ((myLocation.bearingTo(friend.getLocation())+compassBearing)%360);
+        updateHUD(bizHud, bearingBiz);
+        updateHUD(friendHud, bearingFriend);
+
         }
         new FriendQuery().execute();
     }
+
+    private void updateHUD(ImageView view, float bearing){
+        if(bearing <0){
+            bearing = 360 - bearing; 
+        }
+        
+        
+        int imageResource = R.drawable.greenfill1;
+        if(bearing > 20 && bearing <= 60){
+            imageResource = R.drawable.greenfill1;
+        }
+        else if(bearing > 60 && bearing <= 100){
+            imageResource = R.drawable.greenfill2;
+        }
+        else if(bearing > 100 && bearing <= 140){
+            imageResource = R.drawable.greenfill3;
+        }
+        else if(bearing > 140 && bearing <= 180){
+            imageResource = R.drawable.greenfill4;
+            
+        }
+        else if(bearing > 180 && bearing <= 220){
+            imageResource = R.drawable.greenfill5;
+            
+        }
+        else if(bearing > 220 && bearing <= 260){
+            imageResource = R.drawable.greenfill6;
+            
+        }
+        else if(bearing > 260 && bearing <= 300){
+            imageResource = R.drawable.greenfill7;
+            
+        }
+        else if(bearing > 300 && bearing <= 340){
+            imageResource = R.drawable.greenfill8;
+        
+        }
+        else{
+            imageResource = R.drawable.greenfill1;
+        }
+
+        view.setImageResource(imageResource);
+    }
+    
     
     @Override
     public void onStart() {
@@ -171,7 +216,7 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
     @Override
     public void onLocationChanged(Location location) {
         myLocation = location;
-        locatonUpdate();
+        locationUpdate();
     }
 
     @Override
@@ -196,7 +241,7 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
         mValues = sensorEvent.values;
 
         compassBearing = mValues[0];
-        locatonUpdate();
+        locationUpdate();
 
 
     }
@@ -440,9 +485,9 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
                                     phone);
                             navBusiness = business;
 
-                            bizAddress.setText(navBusiness.getAddressLine());
+                            bizAddr.setText(navBusiness.getAddressLine());
                             bizName.setText(navBusiness.getName());
-                            bizSuburb.setText(navBusiness.getSuburb());
+                            bizSub.setText(navBusiness.getSuburb());
                         } catch (Exception e) {
 
                         }
