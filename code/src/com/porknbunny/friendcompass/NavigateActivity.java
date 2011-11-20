@@ -29,6 +29,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -142,8 +143,9 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
 
     private void locationUpdate(){
         if(navBusiness != null){
-        bizDist.setText(""+myLocation.distanceTo(navBusiness.getLocation()));
-        friendDist.setText("" + myLocation.distanceTo(friend.getLocation()));
+            //TODO NICE NUMBERS
+        bizDist.setText(""+NumberFormat.getInstance().format(myLocation.distanceTo(navBusiness.getLocation()))+"m");
+        friendDist.setText("" + NumberFormat.getInstance().format((int) myLocation.distanceTo(friend.getLocation())) + "m");
         float bearingBiz = ((myLocation.bearingTo(navBusiness.getLocation())+compassBearing)%360);
         float bearingFriend = ((myLocation.bearingTo(friend.getLocation())+compassBearing)%360);
         updateHUD(bizHud, bearingBiz);
