@@ -157,7 +157,7 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
         if(bearing <0){
             bearing = 360 - bearing; 
         }
-        
+        bearing = 360 - bearing;
         
         int imageResource = R.drawable.greenfill1;
         if(bearing > 20 && bearing <= 60){
