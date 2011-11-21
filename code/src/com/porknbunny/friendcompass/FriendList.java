@@ -106,12 +106,13 @@ public class FriendList extends FragmentActivity implements LocationListener{
         criteria.setBearingAccuracy(Criteria.ACCURACY_HIGH);
 
         
-        if(count++ %1 == 0){
+        if(lastUpdate == 0 || lastUpdate < Calendar.getInstance().getTimeInMillis()-1000){
+            Calendar.getInstance().getTimeInMillis();
             new FriendQuery().execute("");
         }
     }
 
-    private int count = 0;
+    private long lastUpdate = 0;
     
     @Override
     public void onStart() {

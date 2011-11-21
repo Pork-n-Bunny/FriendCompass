@@ -35,6 +35,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -175,10 +176,14 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
         updateHUD(friendHud, bearingFriend);
 
         }
-        if(count++ % 1000 == 0){
+
+        if(lastUpdate == 0 || lastUpdate < Calendar.getInstance().getTimeInMillis()-1000){
+            Calendar.getInstance().getTimeInMillis();
             new FriendQuery().execute("");
         }
     }
+
+    private long lastUpdate = 0;
 
     private void updateHUD(ImageView view, float bearing){
         if(bearing <0){
