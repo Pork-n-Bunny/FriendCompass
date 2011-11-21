@@ -160,7 +160,7 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
             return null;
     }
 
-
+    private int count = 0;
     private void locationUpdate(){
         if(navBusiness != null){
             //TODO NICE NUMBERS
@@ -175,7 +175,9 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
         updateHUD(friendHud, bearingFriend);
 
         }
-        new FriendQuery().execute("");
+        if(count++ % 1000 == 0){
+            new FriendQuery().execute("");
+        }
     }
 
     private void updateHUD(ImageView view, float bearing){

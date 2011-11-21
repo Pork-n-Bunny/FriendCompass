@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:background="#436BA3"
-    android:gravity="center"
-    >
+              android:orientation="horizontal"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:background="#436BA3"
+              android:gravity="center"
+        >
     <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:layout_weight="2"
             android:gravity="center"
             >
@@ -35,26 +35,26 @@
                 android:gravity="center|center_horizontal"
                 android:orientation="vertical"
                 >
-        <TextView
-                android:id="@+id/na_biz_distance"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Loading..."
-                android:textColor="#ffffff"
-                android:textSize="25dp"
-                android:textStyle="bold"
-                android:gravity="center"
-                />
-        <TextView
-                android:id="@+id/na_biz_name"
-                android:layout_below="@+id/na_biz_distance"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Fetching from Sensis"
-                android:textColor="#ffffff"
-                android:textSize="15dp"
-                android:gravity="center"
-                />
+            <TextView
+                    android:id="@+id/na_biz_distance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Loading..."
+                    android:textColor="#ffffff"
+                    android:textSize="25dp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    />
+            <TextView
+                    android:id="@+id/na_biz_name"
+                    android:layout_below="@+id/na_biz_distance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Fetching from Sensis"
+                    android:textColor="#ffffff"
+                    android:textSize="15dp"
+                    android:gravity="center"
+                    />
             <TextView
                     android:id="@+id/na_biz_addr"
                     android:layout_below="@+id/na_biz_name"
@@ -79,20 +79,20 @@
         </LinearLayout>
     </FrameLayout>
     <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
             >
         <ImageView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:src="@drawable/hud"
                 android:adjustViewBounds="true"
                 />
         <ImageView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:src="@drawable/greenfill1"
                 android:id="@+id/na_friend_hud"
                 android:onClick="gmapsFriend"
@@ -105,27 +105,27 @@
                 android:gravity="center|center_horizontal"
                 android:orientation="vertical"
                 >
-        <TextView
-                android:id="@+id/na_friend_distance"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Loading..."
-                android:textColor="#ffffff"
-                android:textStyle="bold"
-                android:textSize="15sp"
-                android:gravity="center"
-                android:onClick="gmapsFriend"
-                />
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Fetching from Pork 'n' Bunny"
-                android:textColor="#ffffff"
-                android:id="@+id/na_friend_name"
-                android:layout_below="@id/na_friend_distance"
-                android:textSize="15sp"
-                android:gravity="center"
-                />
+            <TextView
+                    android:id="@+id/na_friend_distance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Loading..."
+                    android:textColor="#ffffff"
+                    android:textStyle="bold"
+                    android:textSize="15sp"
+                    android:gravity="center"
+                    android:onClick="gmapsFriend"
+                    />
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Fetching from Pork 'n' Bunny"
+                    android:textColor="#ffffff"
+                    android:id="@+id/na_friend_name"
+                    android:layout_below="@id/na_friend_distance"
+                    android:textSize="15sp"
+                    android:gravity="center"
+                    />
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

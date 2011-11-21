@@ -28,6 +28,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -104,9 +105,14 @@ public class FriendList extends FragmentActivity implements LocationListener{
         criteria.setAccuracy(Criteria.ACCURACY_FINE);
         criteria.setBearingAccuracy(Criteria.ACCURACY_HIGH);
 
-        new FriendQuery().execute("");
+        
+        if(count++ %1 == 0){
+            new FriendQuery().execute("");
+        }
     }
 
+    private int count = 0;
+    
     @Override
     public void onStart() {
         super.onStart();
@@ -205,10 +211,10 @@ public class FriendList extends FragmentActivity implements LocationListener{
             Friend friend = friendList.get(position);
             if (friend != null) {
                 ((TextView) convertView.getTag(R.id.fl_name)).setText(friend.getUserid());
-                ((TextView) convertView.getTag(R.id.fl_dist)).setText(""+friend.getLocation().distanceTo(location));
-                ((TextView) convertView.getTag(R.id.fl_business_set)).setText(""+friend.getBizID());
-                ((TextView) convertView.getTag(R.id.fl_time)).setText(""+friend.getTime());
-                ((TextView) convertView.getTag(R.id.fl_userset)).setText(""+friend.getFriend());
+                ((TextView) convertView.getTag(R.id.fl_dist)).setText(""+NumberFormat.getInstance().format((int)friend.getLocation().distanceTo(location))+"m");
+                //((TextView) convertView.getTag(R.id.fl_business_set)).setText(""+friend.getBizID());
+                ((TextView) convertView.getTag(R.id.fl_time)).setText(""+ (Math.abs(friend.getTime() - (location.getTime()/1000))) + " seconds ago");
+                //((TextView) convertView.getTag(R.id.fl_userset)).setText(""+friend.getFriend());
             }
             return convertView;
         }
