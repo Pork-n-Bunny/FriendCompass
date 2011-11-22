@@ -4,10 +4,7 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.Intent;
-import android.location.Criteria;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
+import android.location.*;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -202,7 +199,8 @@ public class FriendList extends FragmentActivity implements LocationListener{
                         R.id.fl_dist,
                         R.id.fl_business_set,
                         R.id.fl_time,
-                        R.id.fl_userset
+                        R.id.fl_userset,
+                        R.id.fl_address
                         };
                 for (int res : resourceList) {
                     convertView.setTag(res, convertView.findViewById(res));
@@ -215,7 +213,7 @@ public class FriendList extends FragmentActivity implements LocationListener{
                 ((TextView) convertView.getTag(R.id.fl_dist)).setText(""+NumberFormat.getInstance().format((int)friend.getLocation().distanceTo(location))+"m");
                 //((TextView) convertView.getTag(R.id.fl_business_set)).setText(""+friend.getBizID());
                 ((TextView) convertView.getTag(R.id.fl_time)).setText(""+ (Math.abs(friend.getTime() - (location.getTime()/1000))) + " seconds ago");
-                //((TextView) convertView.getTag(R.id.fl_userset)).setText(""+friend.getFriend());
+                ((TextView) convertView.getTag(R.id.fl_address)).setText(""+friend.getAddress());
             }
             return convertView;
         }
@@ -267,18 +265,27 @@ public class FriendList extends FragmentActivity implements LocationListener{
             @Override
             protected void onPostExecute(String result) {
                 if (result != null) {
+                    Geocoder gc = new Geocoder(getApplicationContext());
                     friendList = new ArrayList<Friend>();
                     //time to parse some JSON!
                     try {
                         JSONArray list = new JSONArray(result);
                         for (int i = 0; i < list.length(); i++) {
                             JSONObject jsonFriend = list.getJSONObject(i);
+                            List<Address> addresses = gc.getFromLocation(jsonFriend.getDouble("lat"),jsonFriend.getDouble("long"),1);
+                            String addr = "";
+                            for(Address address : addresses){
+                                addr = address.toString();
+                            }
+
+
                             Friend tempFriend = new Friend(jsonFriend.getString("userid"),
                                     jsonFriend.getString("friend"),
                                     jsonFriend.getString("businessid"),
                                     jsonFriend.getDouble("lat"),
                                     jsonFriend.getDouble("long"),
-                                    jsonFriend.getInt("time"));
+                                    jsonFriend.getInt("time"),
+                                    addr);
                             //if(tempFriend.getUserid().compareTo(userName) != 0){
                                 friendList.add(tempFriend);
                             //}

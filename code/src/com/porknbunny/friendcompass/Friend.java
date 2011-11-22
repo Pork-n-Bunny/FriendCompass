@@ -15,14 +15,24 @@ public class Friend implements Serializable {
     private String userid,friend,bizID;
     private double lat,longi;
     private int time;
+    private String address;
 
-    public Friend(String userid, String friend, String bizID, double lat, double longi, int time) {
+    public Friend(String userid, String friend, String bizID, double lat, double longi, int time, String address) {
         this.userid = userid;
         this.friend = friend;
         this.bizID = bizID;
         this.lat = lat;
         this.longi = longi;
         this.time = time;
+        this.address = address;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public Location getLocation(){

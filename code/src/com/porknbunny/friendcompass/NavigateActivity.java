@@ -387,7 +387,8 @@ public class NavigateActivity extends FragmentActivity implements LocationListen
                                 jsonFriend.getString("businessid"),
                                 jsonFriend.getDouble("lat"),
                                 jsonFriend.getDouble("long"),
-                                jsonFriend.getInt("time"));
+                                jsonFriend.getInt("time"),
+                                "");
                         //if(tempFriend.getUserid().compareTo(userName) != 0){
                         if(friend.getUserid().compareTo(tempFriend.getUserid()) == 0){
                             friend.setLat(tempFriend.getLat());
